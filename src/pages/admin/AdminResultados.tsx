@@ -136,7 +136,7 @@ const AdminResultados: React.FC = () => {
       )}
 
       {/* Formulario */}
-      <div className="bg-white p-4 rounded-xl shadow-sm space-y-4">
+      <form onSubmit={handleSubmit} className="bg-white p-4 rounded-xl shadow-sm space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Seleccionar Lotería</label>
           <select
@@ -220,7 +220,7 @@ const AdminResultados: React.FC = () => {
         >
           {loading ? 'Guardando...' : 'Guardar Resultados'}
         </button>
-      </div>
+      </form>
 
       {/* Resultados de Hoy - Tabla PC */}
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">

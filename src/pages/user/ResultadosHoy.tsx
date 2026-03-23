@@ -105,13 +105,6 @@ const ResultadosHoy: React.FC = () => {
     }
   };
 
-  const renderBola = (digit: string | null | undefined, isPending: boolean) => {
-    if (isPending || !digit) {
-      return <div className="bola-pending">{digit || '?'}</div>;
-    }
-    return <div className="bola">{digit}</div>;
-  };
-
   if (loading) {
     return (
       <div className="resultados-hoy">
