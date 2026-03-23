@@ -29,18 +29,20 @@ const AdminDashboard: React.FC = () => {
       const usuarios = await usuarioService.getUsuarios();
       const apuestaData = await apuestaService.getApuestas();
       
-      const usuariosArray = usuarios as Array<{id: number; saldo_principal: number; saldo_extraccion: number}>;
-      const apuestasArray = apuestaData as Array<{monto: number; premio: number; fecha: string}>;
+      const usuariosArr = Array.isArray(usuarios) ? usuarios : (usuarios as { results?: Array<{id: number; saldo_principal: number | string; saldo_extraccion: number | string}> }).results || [];
+      const apuestasArr = Array.isArray(apuestaData) ? apuestaData : (apuestaData as { results?: Array<{monto: number | string; premio: number | string; fecha: string}> }).results || [];
+      
+      const getNum = (val: number | string) => typeof val === 'string' ? parseFloat(val) : val;
       
       const hoy = new Date().toISOString().split('T')[0];
-      const apuestasDeHoy = apuestasArray.filter(a => a.fecha.startsWith(hoy));
+      const apuestasDeHoy = apuestasArr.filter(a => a.fecha.startsWith(hoy));
       
       setStats({
-        totalUsuarios: usuariosArray.length,
+        totalUsuarios: usuariosArr.length,
         apuestasHoy: apuestasDeHoy.length,
-        volumenApuestas: apuestasDeHoy.reduce((sum, a) => sum + a.monto, 0),
-        premiosPagados: apuestasDeHoy.reduce((sum, a) => sum + a.premio, 0),
-        saldoTotal: usuariosArray.reduce((sum, u) => sum + u.saldo_principal + u.saldo_extraccion, 0),
+        volumenApuestas: apuestasDeHoy.reduce((sum, a) => sum + getNum(a.monto), 0),
+        premiosPagados: apuestasDeHoy.reduce((sum, a) => sum + getNum(a.premio), 0),
+        saldoTotal: usuariosArr.reduce((sum, u) => sum + getNum(u.saldo_principal) + getNum(u.saldo_extraccion), 0),
       });
     } catch (err) {
       console.error('Error loading stats:', err);

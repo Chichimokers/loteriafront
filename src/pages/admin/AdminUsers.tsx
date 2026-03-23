@@ -6,8 +6,8 @@ interface Usuario {
   id: number;
   email: string;
   movil: string;
-  saldo_principal: number;
-  saldo_extraccion: number;
+  saldo_principal: number | string;
+  saldo_extraccion: number | string;
   banco: string;
   is_active: boolean;
   date_joined: string;
@@ -35,11 +35,16 @@ const AdminUsers: React.FC = () => {
     }
   };
 
+  const getSaldo = (saldo: number | string) => {
+    const num = typeof saldo === 'string' ? parseFloat(saldo) : saldo;
+    return num.toFixed(2);
+  };
+
   const handleEdit = (usuario: Usuario) => {
     setEditingId(usuario.id);
     setEditData({
-      saldo_principal: usuario.saldo_principal,
-      saldo_extraccion: usuario.saldo_extraccion,
+      saldo_principal: typeof usuario.saldo_principal === 'string' ? parseFloat(usuario.saldo_principal) : usuario.saldo_principal,
+      saldo_extraccion: typeof usuario.saldo_extraccion === 'string' ? parseFloat(usuario.saldo_extraccion) : usuario.saldo_extraccion,
     });
   };
 
@@ -96,7 +101,7 @@ const AdminUsers: React.FC = () => {
                     onChange={(e) => setEditData({ ...editData, saldo_principal: Number(e.target.value) })}
                   />
                 ) : (
-                  usuario.saldo_principal.toFixed(2)
+                  getSaldo(usuario.saldo_principal)
                 )}
               </td>
               <td>
@@ -107,7 +112,7 @@ const AdminUsers: React.FC = () => {
                     onChange={(e) => setEditData({ ...editData, saldo_extraccion: Number(e.target.value) })}
                   />
                 ) : (
-                  usuario.saldo_extraccion.toFixed(2)
+                  getSaldo(usuario.saldo_extraccion)
                 )}
               </td>
               <td>{usuario.banco}</td>

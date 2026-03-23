@@ -21,6 +21,7 @@ const AdminExtracciones: React.FC = () => {
   }, [filter]);
 
   const loadExtracciones = async () => {
+    setLoading(true);
     try {
       const data = await extraccionService.getExtracciones(filter);
       const arr = Array.isArray(data) ? data : (data as { results?: Extraccion[] }).results || [];
