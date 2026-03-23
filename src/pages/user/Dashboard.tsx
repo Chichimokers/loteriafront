@@ -188,11 +188,11 @@ const Dashboard: React.FC = () => {
               </div>
               <div className="form-group">
                 <label>ID de Transferencia</label>
-                <input
-                  type="text"
+                <textarea
                   value={acreditacionData.id_transferencia}
                   onChange={(e) => setAcreditacionData({ ...acreditacionData, id_transferencia: e.target.value })}
                   required
+                  rows={2}
                 />
               </div>
               <div className="modal-actions">

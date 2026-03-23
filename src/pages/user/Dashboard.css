@@ -112,3 +112,14 @@
   color: #1a73e8;
   margin-top: 4px;
 }
+
+.modal .form-group input,
+.modal .form-group textarea {
+  padding: 14px 12px;
+  font-size: 16px;
+}
+
+.modal .form-group textarea {
+  min-height: 80px;
+  resize: vertical;
+}
