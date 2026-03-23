@@ -5,7 +5,7 @@ import './AdminExtracciones.css';
 interface Extraccion {
   id: number;
   usuario_email: string;
-  monto: number;
+  monto: number | string;
   estado: string;
   fecha: string;
 }
@@ -81,27 +81,30 @@ const AdminExtracciones: React.FC = () => {
             {filter === 'pendiente' && <th>Acciones</th>}
           </tr>
         </thead>
-        <tbody>
-          {extracciones.map((extraccion) => (
-            <tr key={extraccion.id}>
-              <td>{extraccion.id}</td>
-              <td>{extraccion.usuario_email}</td>
-              <td>{extraccion.monto.toFixed(2)} CUP</td>
-              <td>{extraccion.estado}</td>
-              <td>{new Date(extraccion.fecha).toLocaleString()}</td>
-              {filter === 'pendiente' && (
-                <td>
-                  <button onClick={() => handleApprove(extraccion.id)} className="btn-approve">
-                    Aprobar
-                  </button>
-                  <button onClick={() => handleReject(extraccion.id)} className="btn-reject">
-                    Rechazar
-                  </button>
-                </td>
-              )}
-            </tr>
-          ))}
-        </tbody>
+          <tbody>
+            {extracciones.map((extraccion) => {
+              const montoNum = typeof extraccion.monto === 'string' ? parseFloat(extraccion.monto) : extraccion.monto;
+              return (
+                <tr key={extraccion.id}>
+                  <td>{extraccion.id}</td>
+                  <td>{extraccion.usuario_email}</td>
+                  <td>{montoNum.toFixed(2)} CUP</td>
+                  <td>{extraccion.estado}</td>
+                  <td>{new Date(extraccion.fecha).toLocaleString()}</td>
+                  {filter === 'pendiente' && (
+                    <td>
+                      <button onClick={() => handleApprove(extraccion.id)} className="btn-approve">
+                        Aprobar
+                      </button>
+                      <button onClick={() => handleReject(extraccion.id)} className="btn-reject">
+                        Rechazar
+                      </button>
+                    </td>
+                  )}
+                </tr>
+              );
+            })}
+          </tbody>
       </table>
     </div>
   );

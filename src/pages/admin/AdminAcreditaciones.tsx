@@ -6,7 +6,7 @@ interface Acreditacion {
   id: number;
   usuario_email: string;
   tarjeta: string;
-  monto: number;
+  monto: number | string;
   sms_confirmacion: string;
   id_transferencia: string;
   estado: string;
@@ -86,29 +86,32 @@ const AdminAcreditaciones: React.FC = () => {
             {filter === 'pendiente' && <th>Acciones</th>}
           </tr>
         </thead>
-        <tbody>
-          {acreditaciones.map((acreditacion) => (
-            <tr key={acreditacion.id}>
-              <td>{acreditacion.id}</td>
-              <td>{acreditacion.usuario_email}</td>
-              <td>{acreditacion.tarjeta}</td>
-              <td>{acreditacion.monto.toFixed(2)} CUP</td>
-              <td>{acreditacion.sms_confirmacion}</td>
-              <td>{acreditacion.id_transferencia}</td>
-              <td>{new Date(acreditacion.fecha).toLocaleString()}</td>
-              {filter === 'pendiente' && (
-                <td>
-                  <button onClick={() => handleApprove(acreditacion.id)} className="btn-approve">
-                    Aprobar
-                  </button>
-                  <button onClick={() => handleReject(acreditacion.id)} className="btn-reject">
-                    Rechazar
-                  </button>
-                </td>
-              )}
-            </tr>
-          ))}
-        </tbody>
+          <tbody>
+            {acreditaciones.map((acreditacion) => {
+              const montoNum = typeof acreditacion.monto === 'string' ? parseFloat(acreditacion.monto) : acreditacion.monto;
+              return (
+                <tr key={acreditacion.id}>
+                  <td>{acreditacion.id}</td>
+                  <td>{acreditacion.usuario_email}</td>
+                  <td>{acreditacion.tarjeta}</td>
+                  <td>{montoNum.toFixed(2)} CUP</td>
+                  <td>{acreditacion.sms_confirmacion}</td>
+                  <td>{acreditacion.id_transferencia}</td>
+                  <td>{new Date(acreditacion.fecha).toLocaleString()}</td>
+                  {filter === 'pendiente' && (
+                    <td>
+                      <button onClick={() => handleApprove(acreditacion.id)} className="btn-approve">
+                        Aprobar
+                      </button>
+                      <button onClick={() => handleReject(acreditacion.id)} className="btn-reject">
+                        Rechazar
+                      </button>
+                    </td>
+                  )}
+                </tr>
+              );
+            })}
+          </tbody>
       </table>
     </div>
   );
