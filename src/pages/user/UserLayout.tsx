@@ -8,18 +8,19 @@ const UserLayout: React.FC = () => {
   const navigate = useNavigate();
 
   React.useEffect(() => {
-    if (user) {
+    if (user && typeof user.saldo_principal === 'number') {
       refreshUser();
     }
-  }, [user, refreshUser]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
-  if (!user) {
-    return <div>Cargando...</div>;
+  if (!user || typeof user.saldo_principal !== 'number') {
+    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>Cargando...</div>;
   }
 
   return (

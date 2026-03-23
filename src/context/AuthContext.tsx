@@ -12,6 +12,7 @@ interface Usuario {
   is_active: boolean;
   is_staff: boolean;
   date_joined: string;
+  fecha_registro?: string;
 }
 
 interface AuthContextType {
@@ -32,7 +33,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const refreshUser = async () => {
     try {
       const userData = await authService.getCurrentUser();
-      setUser(userData as Usuario);
+      const data = userData as Record<string, unknown>;
+      setUser({
+        id: data.id as number,
+        email: data.email as string,
+        movil: (data.movil as string) || '',
+        tarjeta_bancaria: (data.tarjeta_bancaria as string) || '',
+        banco: (data.banco as string) || '',
+        saldo_principal: typeof data.saldo_principal === 'string' ? parseFloat(data.saldo_principal) : (data.saldo_principal as number) || 0,
+        saldo_extraccion: typeof data.saldo_extraccion === 'string' ? parseFloat(data.saldo_extraccion) : (data.saldo_extraccion as number) || 0,
+        is_active: data.is_active as boolean ?? true,
+        is_staff: data.is_staff as boolean ?? false,
+        date_joined: (data.date_joined as string) || (data.fecha_registro as string) || new Date().toISOString(),
+      });
     } catch {
       setUser(null);
     }

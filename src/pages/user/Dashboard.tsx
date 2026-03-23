@@ -89,7 +89,7 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  if (!user) {
+  if (!user || typeof user.saldo_principal !== 'number') {
     return <div>Cargando...</div>;
   }
 
