@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { acreditacionService } from '../../services/api';
-import './AdminAcreditaciones.css';
+import './AdminTables.css';
 
 interface Acreditacion {
   id: number;

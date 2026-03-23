@@ -578,23 +578,6 @@
 }
 
 @media (max-width: 480px) {
-  .resultados-stats {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-  }
-
-  .stat-item {
-    padding: 16px;
-  }
-
-  .stat-number {
-    font-size: 24px;
-  }
-
-  .stat-label {
-    font-size: 11px;
-  }
-}
   .resultados-header {
     flex-direction: column;
     gap: 16px;

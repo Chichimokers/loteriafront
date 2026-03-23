@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { usuarioService } from '../../services/api';
-import './AdminUsers.css';
+import './AdminTables.css';
 
 interface Usuario {
   id: number;

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { lotteryService } from '../../services/api';
 import api from '../../services/api';
-import './AdminTiradas.css';
+import './AdminTables.css';
 
 interface Tirada {
   id: number;

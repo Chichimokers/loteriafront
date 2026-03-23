@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { extraccionService } from '../../services/api';
-import './AdminExtracciones.css';
+import './AdminTables.css';
 
 interface Extraccion {
   id: number;

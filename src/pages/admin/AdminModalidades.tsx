@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { lotteryService, modalidadService } from '../../services/api';
-import './AdminModalidades.css';
+import './AdminTables.css';
 
 interface Modalidad {
   id: number;
