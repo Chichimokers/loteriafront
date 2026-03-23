@@ -38,13 +38,18 @@ const ResultadosHoy: React.FC = () => {
   const [grupos, setGrupos] = useState<GrupoLoteria[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     loadData();
   }, []);
 
-  const loadData = async () => {
-    setLoading(true);
+  const loadData = async (isRefresh: boolean = false) => {
+    if (isRefresh) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
     setError('');
     try {
       const [loteriasData, resultadosData, tiradasActivasData] = await Promise.all([
@@ -122,6 +127,7 @@ const ResultadosHoy: React.FC = () => {
       setError('Error al cargar los resultados');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -173,11 +179,17 @@ const ResultadosHoy: React.FC = () => {
     return tiradasActivas[0] || null;
   };
 
+  const getHoraActual = (): string => {
+    const now = new Date();
+    return now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false });
+  };
+
   if (loading) {
     return (
       <div className="resultados-hoy">
         <div className="resultados-header">
           <h2>Resultados de Hoy</h2>
+          <span className="header-date">{new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
         </div>
         <div className="loading-state">Cargando resultados...</div>
       </div>
@@ -187,86 +199,131 @@ const ResultadosHoy: React.FC = () => {
   return (
     <div className="resultados-hoy">
       <div className="resultados-header">
-        <h2>Resultados de Hoy</h2>
-        <button onClick={loadData} className="btn-refresh">
-          Actualizar
+        <div className="header-content">
+          <h2>Resultados de Hoy</h2>
+          <span className="header-date">{new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+        </div>
+        <button onClick={() => loadData(true)} className="btn-refresh" disabled={refreshing}>
+          {refreshing ? (
+            <>
+              <span className="refresh-spinner"></span>
+              Actualizando...
+            </>
+          ) : (
+            <>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+              </svg>
+              Actualizar
+            </>
+          )}
         </button>
       </div>
 
       {error && <div className="error-message">{error}</div>}
 
+      <div className="resultados-stats">
+        <div className="stat-item">
+          <span className="stat-number">{grupos.length}</span>
+          <span className="stat-label">Loterías</span>
+        </div>
+        <div className="stat-item">
+          <span className="stat-number">{grupos.reduce((acc, g) => acc + g.tiradasActivas.length, 0)}</span>
+          <span className="stat-label">Tiradas</span>
+        </div>
+        <div className="stat-item">
+          <span className="stat-number">{grupos.reduce((acc, g) => acc + g.tiradas.filter(t => t.resultado).length, 0)}</span>
+          <span className="stat-label">Resultados</span>
+        </div>
+      </div>
+
       {grupos.length === 0 ? (
         <div className="no-resultados">
-          <div className="no-resultados-icon">📋</div>
-          <p>No hay resultados para hoy</p>
+          <div className="no-resultados-content">
+            <span className="no-resultados-icon">🎰</span>
+            <p>No hay resultados para hoy</p>
+            <span className="no-resultados-subtitle">Vuelve más tarde para ver los resultados</span>
+          </div>
         </div>
       ) : (
         <div className="loterias-grid">
-          {grupos.map((grupo) => (
-            <div key={grupo.nombre} className="loteria-resultado-card">
-              <div className="loteria-header">
-                {grupo.foto ? (
-                  <img src={grupo.foto} alt={grupo.nombre} className="loteria-foto" />
-                ) : (
-                  <div className="loteria-foto-placeholder">
-                    {grupo.nombre.charAt(0)}
+          {grupos.map((grupo) => {
+            const resultadosCount = grupo.tiradas.filter(t => t.resultado).length;
+            const pendingCount = grupo.tiradasActivas.length - resultadosCount;
+            
+            return (
+              <div key={grupo.nombre} className="loteria-resultado-card">
+                <div className="loteria-header">
+                  <div className="loteria-badge">
+                    {resultadosCount > 0 ? `${resultadosCount} resultados` : 'Pendiente'}
                   </div>
-                )}
-                <h3>{grupo.nombre}</h3>
-              </div>
+                  {grupo.foto ? (
+                    <img src={grupo.foto} alt={grupo.nombre} className="loteria-foto" />
+                  ) : (
+                    <div className="loteria-foto-placeholder">
+                      {grupo.nombre.charAt(0)}
+                    </div>
+                  )}
+                  <h3>{grupo.nombre}</h3>
+                  <div className="loteria-meta">
+                    <span className="meta-dot"></span>
+                    <span>{grupo.tiradasActivas.length} tiradas</span>
+                  </div>
+                </div>
 
-              <div className="tiradas-list">
-                {grupo.tiradasActivas.map((hora) => {
-                  const tiradaConResultado = grupo.tiradas.find(t => t.hora === hora);
-                  const tieneResultado = tiradaConResultado?.resultado !== null && tiradaConResultado?.resultado !== undefined;
-                  
-                  return (
-                    <div key={hora} className={`tirada-resultado ${!tieneResultado ? 'tirada-pendiente' : ''}`}>
-                      <div className="tirada-hora">
-                        {hora}
-                        {!tieneResultado && (
-                          <span className="badge-pendiente">Pendiente</span>
-                        )}
-                      </div>
-                      
-                      <div className="picks-container">
-                        <div className="pick-group">
-                          <span className="pick-label">Pick 3</span>
-                          <div className="bolas-row">
-                            {renderBolas(
-                              tieneResultado ? tiradaConResultado?.resultado?.pick_3 ?? null : null,
-                              3,
-                              true,
-                              !tieneResultado
-                            )}
-                          </div>
+                <div className="tiradas-list">
+                  {grupo.tiradasActivas.map((hora) => {
+                    const tiradaConResultado = grupo.tiradas.find(t => t.hora === hora);
+                    const tieneResultado = tiradaConResultado?.resultado !== null && tiradaConResultado?.resultado !== undefined;
+                    
+                    return (
+                      <div key={hora} className={`tirada-resultado ${!tieneResultado ? 'tirada-pendiente' : ''}`}>
+                        <div className="tirada-hora">
+                          {hora}
+                          {!tieneResultado && (
+                            <span className="badge-pendiente">Pendiente</span>
+                          )}
                         </div>
                         
-                        <div className="pick-group">
-                          <span className="pick-label">Pick 4</span>
-                          <div className="bolas-row">
-                            {renderBolas(
-                              tieneResultado ? tiradaConResultado?.resultado?.pick_4 ?? null : null,
-                              4,
-                              false,
-                              !tieneResultado
-                            )}
+                        <div className="picks-container">
+                          <div className="pick-group">
+                            <span className="pick-label">Pick 3</span>
+                            <div className="bolas-row">
+                              {renderBolas(
+                                tieneResultado ? tiradaConResultado?.resultado?.pick_3 ?? null : null,
+                                3,
+                                true,
+                                !tieneResultado
+                              )}
+                            </div>
+                          </div>
+                          
+                          <div className="pick-group">
+                            <span className="pick-label">Pick 4</span>
+                            <div className="bolas-row">
+                              {renderBolas(
+                                tieneResultado ? tiradaConResultado?.resultado?.pick_4 ?? null : null,
+                                4,
+                                false,
+                                !tieneResultado
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      {!tieneResultado && (
-                        <div className="proxima-tirada">
-                          <span className="proxima-icon">⏰</span>
-                          Próxima tirada: {getProximaTirada(hora, grupo.tiradasActivas) || 'Verifique'}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+                        {!tieneResultado && (
+                          <div className="proxima-tirada">
+                            <span className="proxima-icon">⏰</span>
+                            <span>Próxima: {getProximaTirada(hora, grupo.tiradasActivas) || 'Pronto'}</span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
