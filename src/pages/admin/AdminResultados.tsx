@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { lotteryService, resultadoService } from '../../services/api';
+import { useToast } from '../../context/ToastContext';
 import { RefreshCw, Trophy, CheckCircle2 } from 'lucide-react';
 
 interface ResultadoHoy {
@@ -18,6 +19,7 @@ interface Tirada {
 }
 
 const AdminResultados: React.FC = () => {
+  const toast = useToast();
   const [tiradas, setTiradas] = useState<Tirada[]>([]);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
@@ -26,8 +28,6 @@ const AdminResultados: React.FC = () => {
     pick_4: '',
   });
   const [selectedLoteria, setSelectedLoteria] = useState<number>(0);
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
 
   useEffect(() => {
     loadData();
@@ -79,18 +79,15 @@ const AdminResultados: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
-    setMessage('');
 
     try {
       await resultadoService.createResultado(formData);
-      setMessage('Resultados ingresados correctamente');
+      toast.showToast('Resultados ingresados correctamente', 'success');
       setFormData({ tirada_id: 0, pick_3: '', pick_4: '' });
       setSelectedLoteria(0);
       await loadData();
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Error al ingresar resultados';
-      setError(errorMessage);
+      toast.showToast(err instanceof Error ? err.message : 'Error al ingresar resultados', 'error');
     } finally {
       setLoading(false);
     }
@@ -122,17 +119,6 @@ const AdminResultados: React.FC = () => {
           Actualizar
         </button>
       </div>
-
-      {message && (
-        <div className="bg-green-500/10 text-green-500 p-3 rounded-lg text-sm font-medium">
-          {message}
-        </div>
-      )}
-      {error && (
-        <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm">
-          {error}
-        </div>
-      )}
 
       {/* Formulario */}
       <form onSubmit={handleSubmit} className="bg-white p-4 rounded-xl shadow-sm space-y-4">

@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/auth-context';
+import { useToast } from '../../context/ToastContext';
 import { authService } from '../../services/api';
-import { CheckCircle2, AlertCircle, Check } from 'lucide-react';
+import { Check } from 'lucide-react';
 
 const Profile: React.FC = () => {
   const { user, refreshUser } = useAuth();
+  const toast = useToast();
   const [formData, setFormData] = useState({
     movil: user?.movil || '',
     tarjeta_bancaria: user?.tarjeta_bancaria || '',
     banco: user?.banco || '',
   });
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     if (e.target.name === 'tarjeta_bancaria') {
@@ -30,15 +30,12 @@ const Profile: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
-    setMessage('');
-
     try {
       await authService.updateProfile(formData);
-      setMessage('Perfil actualizado correctamente');
+      toast.showToast('Perfil actualizado correctamente', 'success');
       await refreshUser();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Error al actualizar perfil');
+      toast.showToast(err instanceof Error ? err.message : 'Error al actualizar perfil', 'error');
     } finally {
       setLoading(false);
     }
@@ -58,21 +55,7 @@ const Profile: React.FC = () => {
         <h1 className="text-3xl font-bold text-gray-900">Mi Perfil</h1>
       </div>
 
-      {message && (
-        <div className="success-message mb-6">
-          <CheckCircle2 className="w-5 h-5" />
-          {message}
-        </div>
-      )}
-      {error && (
-        <div className="error-message mb-6">
-          <AlertCircle className="w-5 h-5" />
-          {error}
-        </div>
-      )}
-
       <div className="card">
-        {/* Profile Header */}
         <div className="flex items-center gap-4 pb-6 mb-6 border-b border-gray-100">
           <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-2xl flex items-center justify-center text-white text-3xl font-bold shadow-lg">
             {user.email.charAt(0).toUpperCase()}

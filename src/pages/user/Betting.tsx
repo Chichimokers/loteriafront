@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/auth-context';
+import { useToast } from '../../context/ToastContext';
 import { lotteryService, apuestaService } from '../../services/api';
-import { Wallet, CheckCircle2, AlertCircle, Dices, Plus, X } from 'lucide-react';
+import { Wallet, Dices, Plus, X, CheckCircle2, Lock, Clock } from 'lucide-react';
 
 interface Loteria {
   id: number;
@@ -16,6 +17,11 @@ interface Tirada {
   loteria_nombre: string;
   hora: string;
   activa: boolean;
+  resultado_hoy: {
+    pick_3: string;
+    pick_4: string;
+    fecha: string;
+  } | null;
 }
 
 interface Modalidad {
@@ -26,85 +32,87 @@ interface Modalidad {
 
 const Betting: React.FC = () => {
   const { user, refreshUser } = useAuth();
+  const toast = useToast();
   const [loterias, setLoterias] = useState<Loteria[]>([]);
   const [tiradas, setTiradas] = useState<Tirada[]>([]);
   const [modalidades, setModalidades] = useState<Modalidad[]>([]);
-  
+
   const [selectedLoteria, setSelectedLoteria] = useState<number | null>(null);
   const [selectedTirada, setSelectedTirada] = useState<number | null>(null);
   const [selectedModalidad, setSelectedModalidad] = useState<number | null>(null);
-  
+
   const [numeros, setNumeros] = useState<string[]>([]);
   const [numeroInput, setNumeroInput] = useState('');
   const [montoPorNumero, setMontoPorNumero] = useState<number>(10);
-  
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
 
-  const loadTiradasPorLoteria = useCallback(async () => {
-    try {
-      const data = await lotteryService.getTiradas();
-      const arr = Array.isArray(data) ? data : (data as { results?: Tirada[] }).results || [];
-      const filtradas = arr.filter((t: Tirada) => t.loteria === selectedLoteria && t.activa);
-      setTiradas(filtradas);
-    } catch (err) {
-      console.error('Error loading tiradas:', err);
-    }
-  }, [selectedLoteria]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    loadLoterias();
-    loadModalidades();
+    loadData();
+    refreshUser();
   }, []);
 
   useEffect(() => {
     if (selectedLoteria) {
-      loadTiradasPorLoteria();
+      filterTiradas();
     } else {
       setTiradas([]);
       setSelectedTirada(null);
     }
-  }, [selectedLoteria, loadTiradasPorLoteria]);
+  }, [selectedLoteria]);
 
-  const loadLoterias = async () => {
+  const loadData = async () => {
     try {
-      const data = await lotteryService.getLoterias();
-      const arr = Array.isArray(data) ? data : (data as { results?: Loteria[] }).results || [];
-      const activas = arr.filter((l: Loteria) => l.activa);
-      setLoterias(activas);
+      const [loteriasData, tiradasData, modalidadesData] = await Promise.all([
+        lotteryService.getLoterias(),
+        lotteryService.getTiradas(),
+        lotteryService.getModalidades(),
+      ]);
+
+      const loteriasArr = Array.isArray(loteriasData)
+        ? loteriasData
+        : (loteriasData as { results?: Loteria[] }).results || [];
+      setLoterias(loteriasArr.filter((l: Loteria) => l.activa));
+
+      const tiradasArr = Array.isArray(tiradasData)
+        ? tiradasData
+        : (tiradasData as { results?: Tirada[] }).results || [];
+      setTiradas(tiradasArr);
+
+      const modalidadesArr = Array.isArray(modalidadesData)
+        ? modalidadesData
+        : (modalidadesData as { results?: Modalidad[] }).results || [];
+      setModalidades(modalidadesArr);
     } catch (err) {
-      console.error('Error loading loterias:', err);
+      console.error('Error loading data:', err);
     }
   };
 
-  const loadModalidades = async () => {
-    try {
-      const data = await lotteryService.getModalidades();
-      const arr = Array.isArray(data) ? data : (data as { results?: Modalidad[] }).results || [];
-      setModalidades(arr);
-    } catch (err) {
-      console.error('Error loading modalidades:', err);
-    }
+  const filterTiradas = () => {
+    if (!selectedLoteria) return;
+    lotteryService.getTiradas().then((data) => {
+      const arr = Array.isArray(data) ? data : (data as { results?: Tirada[] }).results || [];
+      const filtradas = arr.filter((t: Tirada) => t.loteria === selectedLoteria && t.activa);
+      setTiradas(filtradas);
+    });
   };
 
   const agregarNumero = () => {
     const num = numeroInput.trim();
     if (num.length !== 3) {
-      setError('El número debe tener exactamente 3 dígitos');
+      toast.showToast('El número debe tener exactamente 3 dígitos', 'warning');
       return;
     }
     if (numeros.includes(num)) {
-      setError('El número ya está agregado');
+      toast.showToast('El número ya está agregado', 'warning');
       return;
     }
     if (numeros.length >= 10) {
-      setError('Máximo 10 números por apuesta');
+      toast.showToast('Máximo 10 números por apuesta', 'warning');
       return;
     }
     setNumeros([...numeros, num]);
     setNumeroInput('');
-    setError('');
   };
 
   const eliminarNumero = (num: string) => {
@@ -116,23 +124,21 @@ const Betting: React.FC = () => {
   const handleApostar = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
-    setMessage('');
 
     if (!selectedTirada || !selectedModalidad) {
-      setError('Por favor complete todos los campos');
+      toast.showToast('Por favor complete todos los campos', 'warning');
       setLoading(false);
       return;
     }
 
     if (numeros.length === 0) {
-      setError('Agregue al menos un número');
+      toast.showToast('Agregue al menos un número', 'warning');
       setLoading(false);
       return;
     }
 
     if (montoTotal > (user?.saldo_principal || 0)) {
-      setError('Saldo insuficiente');
+      toast.showToast('Saldo insuficiente', 'error');
       setLoading(false);
       return;
     }
@@ -144,18 +150,22 @@ const Betting: React.FC = () => {
         numeros: numeros,
         monto_por_numero: montoPorNumero,
       });
-      setMessage('¡Apuesta realizada con éxito! Mucha suerte 🍀');
+      toast.showToast('¡Apuesta realizada con éxito!', 'success');
       await refreshUser();
       setNumeros([]);
       setNumeroInput('');
       setSelectedTirada(null);
       setSelectedModalidad(null);
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Error al realizar apuesta';
-      setError(errorMessage);
+      toast.showToast(err instanceof Error ? err.message : 'Error al realizar apuesta', 'error');
     } finally {
       setLoading(false);
     }
+  };
+
+  const formatHora = (hora: string) => {
+    if (!hora) return '-';
+    return hora.substring(0, 5);
   };
 
   if (!user || typeof user.saldo_principal !== 'number') {
@@ -167,65 +177,53 @@ const Betting: React.FC = () => {
   }
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">Realizar Apuesta</h1>
-        <div className="bg-indigo-500/10 px-4 py-2 rounded-full flex items-center gap-2">
+    <div className="space-y-6 max-w-4xl mx-auto">
+      {/* Header */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Realizar Apuesta</h1>
+        <div className="bg-indigo-50 px-4 py-2 rounded-full flex items-center gap-2">
           <Wallet className="w-4 h-4 text-indigo-500" />
-          <span className="text-sm font-medium text-indigo-500">
-            Saldo: {user.saldo_principal.toFixed(2)} CUP
+          <span className="text-sm font-medium text-indigo-600">
+            {user.saldo_principal.toFixed(2)} CUP
           </span>
         </div>
       </div>
 
-      {message && (
-        <div className="success-message">
-          <CheckCircle2 className="w-5 h-5" />
-          {message}
-        </div>
-      )}
-      {error && (
-        <div className="error-message">
-          <AlertCircle className="w-5 h-5" />
-          {error}
-        </div>
-      )}
+      <form onSubmit={handleApostar} className="space-y-6">
 
-      <form onSubmit={handleApostar} className="space-y-8">
-      <div className="card">
         {/* Step 1: Loterías */}
-        <div className="mb-8">
+        <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center text-white font-bold">1</div>
-            <h2 className="text-xl font-bold text-gray-900">Selecciona una Lotería</h2>
+            <div className="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center text-white text-sm font-bold">1</div>
+            <h2 className="text-lg font-bold text-gray-900">Lotería</h2>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
             {loterias.map((loteria) => (
               <button
                 key={loteria.id}
-                onClick={() => setSelectedLoteria(loteria.id)}
-                className={`
-                  relative p-4 rounded-2xl border-2 transition-all duration-200 text-center
-                  ${selectedLoteria === loteria.id 
-                    ? 'border-indigo-500 bg-indigo-500/5 shadow-lg scale-105' 
-                    : 'border-gray-200 hover:border-indigo-500/50 hover:bg-gray-50'}
-                `}
+                type="button"
+                onClick={() => {
+                  setSelectedLoteria(loteria.id);
+                  setSelectedTirada(null);
+                  setSelectedModalidad(null);
+                }}
+                className={`relative p-3 rounded-xl border-2 transition-all text-center ${
+                  selectedLoteria === loteria.id
+                    ? 'border-indigo-500 bg-indigo-50 shadow-md'
+                    : 'border-gray-200 hover:border-indigo-300 hover:bg-gray-50'
+                }`}
               >
                 {loteria.foto ? (
-                  <img 
-                    src={loteria.foto} 
-                    alt={loteria.nombre} 
-                    className="w-16 h-16 rounded-xl object-cover mx-auto mb-2 shadow-md"
-                  />
+                  <img src={loteria.foto} alt={loteria.nombre} className="w-12 h-12 rounded-lg object-cover mx-auto mb-2" />
                 ) : (
-                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center mx-auto mb-2 text-white text-2xl font-bold shadow-md">
+                  <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center mx-auto mb-2 text-white font-bold">
                     {loteria.nombre.charAt(0)}
                   </div>
                 )}
-                <p className="font-semibold text-gray-900 text-sm">{loteria.nombre}</p>
+                <p className="text-sm font-semibold text-gray-900 truncate">{loteria.nombre}</p>
                 {selectedLoteria === loteria.id && (
-                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-indigo-500 rounded-full flex items-center justify-center">
-                    <CheckCircle2 className="w-4 h-4 text-white" />
+                  <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-indigo-500 rounded-full flex items-center justify-center">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-white" />
                   </div>
                 )}
               </button>
@@ -233,146 +231,180 @@ const Betting: React.FC = () => {
           </div>
         </div>
 
-        {/* Step 2: Horario */}
-        {selectedLoteria && (
-          <div className="mb-8 animate-fade-in">
+        {/* Step 2: Tiradas */}
+        {selectedLoteria && tiradas.length > 0 && (
+          <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm animate-fade-in">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center text-white font-bold">2</div>
-              <h2 className="text-xl font-bold text-gray-900">Selecciona el Horario</h2>
+              <div className="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center text-white text-sm font-bold">2</div>
+              <h2 className="text-lg font-bold text-gray-900">Horario</h2>
             </div>
-            <select
-              value={selectedTirada || ''}
-              onChange={(e) => setSelectedTirada(Number(e.target.value) || null)}
-              className="select"
-            >
-              <option value="">Seleccionar Horario</option>
-              {tiradas.map((tirada) => (
-                <option key={tirada.id} value={tirada.id}>
-                  {tirada.hora}
-                </option>
-              ))}
-            </select>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              {tiradas.map((tirada) => {
+                const cerrada = tirada.resultado_hoy !== null;
+                const isSelected = selectedTirada === tirada.id;
+                return (
+                  <button
+                    key={tirada.id}
+                    type="button"
+                    disabled={cerrada}
+                    onClick={() => {
+                      if (!cerrada) setSelectedTirada(tirada.id);
+                    }}
+                    className={`relative p-4 rounded-xl border-2 transition-all text-center ${
+                      cerrada
+                        ? 'border-gray-200 bg-gray-100 opacity-60 cursor-not-allowed'
+                        : isSelected
+                          ? 'border-indigo-500 bg-indigo-50 shadow-md'
+                          : 'border-gray-200 hover:border-indigo-300 hover:bg-gray-50 cursor-pointer'
+                    }`}
+                  >
+                    <Clock className={`w-6 h-6 mx-auto mb-1 ${cerrada ? 'text-gray-400' : 'text-indigo-500'}`} />
+                    <p className={`text-lg font-bold ${cerrada ? 'text-gray-400' : 'text-gray-900'}`}>
+                      {formatHora(tirada.hora)}
+                    </p>
+                    {cerrada ? (
+                      <div className="flex items-center justify-center gap-1 mt-1">
+                        <Lock className="w-3 h-3 text-gray-400" />
+                        <span className="text-xs text-gray-400 font-medium">Cerrada</span>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-green-600 font-medium mt-1">Abierta</p>
+                    )}
+                    {isSelected && !cerrada && (
+                      <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-indigo-500 rounded-full flex items-center justify-center">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         )}
 
-        {/* Step 3: Modalidad */}
+        {/* Step 3: Modalidades en Cards */}
         {selectedTirada && (
-          <div className="mb-8 animate-fade-in">
+          <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm animate-fade-in">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center text-white font-bold">3</div>
-              <h2 className="text-xl font-bold text-gray-900">Selecciona la Modalidad</h2>
+              <div className="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center text-white text-sm font-bold">3</div>
+              <h2 className="text-lg font-bold text-gray-900">Modalidad</h2>
             </div>
-            <select
-              value={selectedModalidad || ''}
-              onChange={(e) => setSelectedModalidad(Number(e.target.value) || null)}
-              className="select"
-            >
-              <option value="">Seleccionar Modalidad</option>
-              {modalidades.map((modalidad) => (
-                <option key={modalidad.id} value={modalidad.id}>
-                  {modalidad.nombre} - Premio: {modalidad.premio_por_peso}x
-                </option>
-              ))}
-            </select>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              {modalidades.map((modalidad) => {
+                const isSelected = selectedModalidad === modalidad.id;
+                return (
+                  <button
+                    key={modalidad.id}
+                    type="button"
+                    onClick={() => setSelectedModalidad(modalidad.id)}
+                    className={`relative p-4 rounded-xl border-2 transition-all text-left ${
+                      isSelected
+                        ? 'border-indigo-500 bg-indigo-50 shadow-md'
+                        : 'border-gray-200 hover:border-indigo-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    <p className={`font-bold ${isSelected ? 'text-indigo-700' : 'text-gray-900'}`}>
+                      {modalidad.nombre}
+                    </p>
+                    <p className={`text-sm mt-1 ${isSelected ? 'text-indigo-600' : 'text-gray-500'}`}>
+                      Premio: <span className="font-semibold">{modalidad.premio_por_peso}x</span> el monto
+                    </p>
+                    {isSelected && (
+                      <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-indigo-500 rounded-full flex items-center justify-center">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         )}
 
         {/* Step 4: Números */}
         {selectedModalidad && (
-          <div className="animate-fade-in">
+          <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm animate-fade-in">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center text-white font-bold">4</div>
-              <h2 className="text-xl font-bold text-gray-900">Ingresa tus Números</h2>
+              <div className="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center text-white text-sm font-bold">4</div>
+              <h2 className="text-lg font-bold text-gray-900">Números</h2>
             </div>
 
-            {/* Input números */}
-            <div className="flex gap-3 mb-6">
-              <div className="relative flex-1">
-                <input
-                  type="text"
-                  value={numeroInput}
-                  onChange={(e) => setNumeroInput(e.target.value.replace(/\D/g, '').slice(0, 3))}
-                  placeholder="000"
-                  maxLength={3}
-                  className="input text-center text-2xl font-bold tracking-widest"
-                />
-              </div>
-              <button 
-                type="button" 
+            <div className="flex gap-3 mb-4">
+              <input
+                type="text"
+                value={numeroInput}
+                onChange={(e) => setNumeroInput(e.target.value.replace(/\D/g, '').slice(0, 3))}
+                placeholder="000"
+                maxLength={3}
+                className="flex-1 p-3 border border-gray-300 rounded-xl text-center text-2xl font-bold tracking-widest focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+              />
+              <button
+                type="button"
                 onClick={agregarNumero}
                 disabled={numeroInput.length !== 3}
-                className="btn btn-primary px-6"
+                className="px-5 py-3 bg-indigo-500 text-white rounded-xl font-semibold flex items-center gap-2 hover:bg-indigo-600 transition-colors disabled:opacity-50"
               >
                 <Plus className="w-5 h-5" />
-                Agregar
+                <span className="hidden sm:inline">Agregar</span>
               </button>
             </div>
 
-            {/* Lista de números */}
             {numeros.length > 0 && (
-              <div className="flex flex-wrap gap-3 mb-8">
+              <div className="flex flex-wrap gap-2 mb-4">
                 {numeros.map((num) => (
-                  <div 
-                    key={num} 
-                    className="relative group"
-                  >
-                    <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center text-white text-2xl font-bold shadow-lg transform group-hover:scale-110 transition-transform">
-                      {num.split('').map((digit, i) => (
-                        <span key={i} className="text-shadow">{digit}</span>
-                      ))}
+                  <div key={num} className="relative group">
+                    <div className="w-14 h-14 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center text-white text-xl font-bold shadow-md">
+                      {num}
                     </div>
-                    <button 
+                    <button
+                      type="button"
                       onClick={() => eliminarNumero(num)}
-                      className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
+                      className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
                     >
-                      <X className="w-4 h-4" />
+                      <X className="w-3 h-3" />
                     </button>
                   </div>
                 ))}
               </div>
             )}
 
-            {/* Monto y Apuesta */}
-            <div className="bg-gray-50 rounded-2xl p-6 mb-6">
-              <div className="grid md:grid-cols-2 gap-6">
+            {/* Monto */}
+            <div className="bg-gray-50 rounded-xl p-4 mb-4">
+              <div className="flex items-center justify-between flex-wrap gap-3">
                 <div>
-                  <label className="label">Monto por número (CUP)</label>
+                  <label className="text-sm text-gray-500 block mb-1">Monto por número</label>
                   <input
                     type="number"
                     min="1"
                     value={montoPorNumero}
                     onChange={(e) => setMontoPorNumero(Number(e.target.value))}
-                    className="input"
+                    className="w-28 p-2 border border-gray-300 rounded-lg text-center font-semibold focus:outline-none focus:border-indigo-500"
                   />
                 </div>
-                <div className="flex flex-col justify-center">
-                  <div className="text-center">
-                    <p className="text-gray-600 mb-2">Monto Total</p>
-                    <p className="text-4xl font-bold text-gray-900">{montoTotal.toFixed(2)} CUP</p>
-                  </div>
+                <div className="text-right">
+                  <p className="text-sm text-gray-500">Total</p>
+                  <p className="text-3xl font-bold text-gray-900">{montoTotal.toFixed(2)} <span className="text-lg text-gray-500">CUP</span></p>
                 </div>
               </div>
             </div>
 
             {/* Botón Apostar */}
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={loading || numeros.length === 0}
-              className="btn btn-primary w-full py-5 text-lg font-bold"
+              className="w-full py-4 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-xl font-bold text-lg flex items-center justify-center gap-3 hover:from-indigo-600 hover:to-indigo-700 transition-all disabled:opacity-50 shadow-lg"
             >
               {loading ? (
                 <div className="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin" />
               ) : (
                 <>
-                  <Dices className="w-6 h-6 mr-2" />
+                  <Dices className="w-6 h-6" />
                   APOSTAR {montoTotal.toFixed(2)} CUP
-                  <Dices className="w-6 h-6 ml-2" />
                 </>
               )}
             </button>
           </div>
         )}
-      </div>
       </form>
     </div>
   );

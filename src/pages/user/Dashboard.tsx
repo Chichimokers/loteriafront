@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/auth-context';
+import { useToast } from '../../context/ToastContext';
 import { tarjetaService, acreditacionService, extraccionService } from '../../services/api';
 import { Wallet, CreditCard, Target, BarChart3, Dices, User, Smartphone, X, Phone } from 'lucide-react';
 
@@ -13,12 +14,11 @@ interface Tarjeta {
 
 const Dashboard: React.FC = () => {
   const { user, refreshUser } = useAuth();
+  const toast = useToast();
   const [tarjetas, setTarjetas] = useState<Tarjeta[]>([]);
   const [showAcreditarModal, setShowAcreditarModal] = useState(false);
   const [showExtraerModal, setShowExtraerModal] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
   const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
 
   const [acreditacionData, setAcreditacionData] = useState({
@@ -34,6 +34,7 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     loadTarjetas();
+    refreshUser();
   }, []);
 
   const loadTarjetas = async () => {
@@ -52,21 +53,28 @@ const Dashboard: React.FC = () => {
     setAcreditacionData({ ...acreditacionData, tarjeta: cardId });
   };
 
+  const openAcreditar = async () => {
+    await refreshUser();
+    setShowAcreditarModal(true);
+  };
+
+  const openExtraer = async () => {
+    await refreshUser();
+    setShowExtraerModal(true);
+  };
+
   const handleAcreditar = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
-    setMessage('');
-
     try {
       await acreditacionService.createAcreditacion(acreditacionData);
-      setMessage('Solicitud enviada. Pendiente de aprobación.');
+      toast.showToast('Solicitud enviada. Pendiente de aprobación.', 'success');
       setShowAcreditarModal(false);
       setAcreditacionData({ tarjeta: 0, monto: 0, sms_confirmacion: '', id_transferencia: '' });
       setSelectedCardId(null);
+      await refreshUser();
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Error al enviar solicitud';
-      setError(errorMessage);
+      toast.showToast(err instanceof Error ? err.message : 'Error al enviar solicitud', 'error');
     } finally {
       setLoading(false);
     }
@@ -75,38 +83,35 @@ const Dashboard: React.FC = () => {
   const handleExtraer = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
-    setMessage('');
 
     const montoRaw = extraccionData.monto;
     if (!montoRaw || montoRaw.trim() === '') {
-      setError('Ingrese un monto válido');
+      toast.showToast('Ingrese un monto válido', 'warning');
       setLoading(false);
       return;
     }
 
     const montoNum = parseFloat(montoRaw);
     if (isNaN(montoNum) || montoNum <= 0) {
-      setError('Ingrese un monto válido mayor a 0');
+      toast.showToast('Ingrese un monto válido mayor a 0', 'warning');
       setLoading(false);
       return;
     }
 
     if (montoNum > (user?.saldo_principal || 0)) {
-      setError('Saldo insuficiente');
+      toast.showToast('Saldo insuficiente', 'error');
       setLoading(false);
       return;
     }
 
     try {
       await extraccionService.createExtraccion({ monto: montoNum });
-      setMessage('Solicitud enviada. Pendiente de aprobación.');
+      toast.showToast('Solicitud enviada. Pendiente de aprobación.', 'success');
       await refreshUser();
       setShowExtraerModal(false);
       setExtraccionData({ monto: '' });
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Error al enviar solicitud';
-      setError(errorMessage);
+      toast.showToast(err instanceof Error ? err.message : 'Error al enviar solicitud', 'error');
     } finally {
       setLoading(false);
     }
@@ -141,12 +146,6 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="p-4 space-y-4 max-w-md mx-auto">
-      {message && (
-        <div className="bg-green-50 text-green-600 p-3 rounded-lg text-sm font-medium">
-          {message}
-        </div>
-      )}
-
       {/* Saldo Principal */}
       <div className="bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-2xl p-5 text-white">
         <div className="flex items-center gap-2 mb-1">
@@ -156,7 +155,7 @@ const Dashboard: React.FC = () => {
         <div className="text-4xl font-bold mb-4">{user.saldo_principal.toFixed(2)} CUP</div>
         <div className="flex gap-3">
           <button
-            onClick={() => setShowAcreditarModal(true)}
+            onClick={openAcreditar}
             className="flex-1 bg-white text-indigo-600 font-semibold py-3 px-4 rounded-xl hover:bg-indigo-50 transition-colors"
           >
             + Acreditar
@@ -172,7 +171,7 @@ const Dashboard: React.FC = () => {
         </div>
         <div className="text-3xl font-bold mb-4">{user.saldo_extraccion.toFixed(2)} CUP</div>
         <button
-          onClick={() => setShowExtraerModal(true)}
+          onClick={openExtraer}
           className="w-full bg-white text-green-600 font-semibold py-3 px-4 rounded-xl hover:bg-green-50 transition-colors"
         >
           Extraer a mi cuenta
@@ -210,8 +209,6 @@ const Dashboard: React.FC = () => {
               </button>
             </div>
             <div className="p-4">
-              {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-4">{error}</div>}
-
               <p className="text-sm text-gray-500 mb-3">Selecciona una tarjeta</p>
 
               <div className="space-y-2 mb-4">
@@ -294,8 +291,6 @@ const Dashboard: React.FC = () => {
                 <span className="text-gray-600">Saldo disponible:</span>
                 <span className="text-xl font-bold text-indigo-600">{user.saldo_principal.toFixed(2)} CUP</span>
               </div>
-
-              {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-4">{error}</div>}
 
               <form onSubmit={handleExtraer} className="space-y-3">
                 <input
