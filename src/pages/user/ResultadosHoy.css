@@ -158,15 +158,17 @@
 
 .tirada-hora {
   font-weight: 700;
-  color: #2d3748;
+  color: white;
   margin-bottom: 16px;
   font-size: 15px;
   text-align: center;
   padding: 8px 16px;
   background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
-  color: white;
   border-radius: 20px;
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   box-shadow: 0 2px 8px rgba(45, 55, 72, 0.3);
 }
 
@@ -279,6 +281,67 @@
   display: none;
 }
 
+.bola-pending {
+  background: linear-gradient(145deg, #e2e8f0 0%, #cbd5e0 100%);
+  box-shadow: 
+    0 4px 8px rgba(203, 213, 224, 0.4),
+    inset 0 2px 4px rgba(255, 255, 255, 0.8);
+  animation: pulse-pending 2s ease-in-out infinite;
+}
+
+.bola-pending::before {
+  display: none;
+}
+
+.bola-pending-text {
+  color: #718096;
+  font-weight: 700;
+}
+
+@keyframes pulse-pending {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(0.95);
+  }
+}
+
+.tirada-pendiente {
+  background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+  border: 1px dashed #fc8181;
+}
+
+.badge-pendiente {
+  background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-left: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  vertical-align: middle;
+}
+
+.proxima-tirada {
+  margin-top: 12px;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-radius: 10px;
+  text-align: center;
+  color: #92400e;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.proxima-icon {
+  margin-right: 6px;
+}
+
 .error-message {
   background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
   color: #c53030;
@@ -336,5 +399,16 @@
     width: 76px;
     height: 76px;
     font-size: 30px;
+  }
+
+  .badge-pendiente {
+    font-size: 9px;
+    padding: 2px 6px;
+    margin-left: 6px;
+  }
+
+  .proxima-tirada {
+    font-size: 12px;
+    padding: 8px 12px;
   }
 }

@@ -9,7 +9,15 @@ interface ResultadoItem {
   resultado: {
     pick_3: string | null;
     pick_4: string | null;
-  };
+  } | null;
+}
+
+interface TiradaActiva {
+  id: number;
+  loteria: number;
+  loteria_nombre: string;
+  hora: string;
+  activa: boolean;
 }
 
 interface LoteriaInfo {
@@ -23,6 +31,7 @@ interface GrupoLoteria {
   nombre: string;
   foto: string;
   tiradas: ResultadoItem[];
+  tiradasActivas: string[];
 }
 
 const ResultadosHoy: React.FC = () => {
@@ -38,9 +47,10 @@ const ResultadosHoy: React.FC = () => {
     setLoading(true);
     setError('');
     try {
-      const [loteriasData, resultadosData] = await Promise.all([
+      const [loteriasData, resultadosData, tiradasActivasData] = await Promise.all([
         lotteryService.getLoterias(),
         lotteryService.getResultadosHoy(),
+        lotteryService.getTiradasActivas(),
       ]);
 
       const loteriasArr = Array.isArray(loteriasData) 
@@ -56,18 +66,50 @@ const ResultadosHoy: React.FC = () => {
         ? resultadosData 
         : (resultadosData as { results?: ResultadoItem[] }).results || [];
 
+      const tiradasActivasArr = Array.isArray(tiradasActivasData)
+        ? tiradasActivasData
+        : (tiradasActivasData as { results?: TiradaActiva[] }).results || [];
+
+      const tiradasActivasPorLoteria = new Map<string, string[]>();
+      tiradasActivasArr.forEach((t: TiradaActiva) => {
+        if (!tiradasActivasPorLoteria.has(t.loteria_nombre)) {
+          tiradasActivasPorLoteria.set(t.loteria_nombre, []);
+        }
+        tiradasActivasPorLoteria.get(t.loteria_nombre)!.push(t.hora);
+      });
+
+      tiradasActivasPorLoteria.forEach((horas, loteria) => {
+        horas.sort((a, b) => a.localeCompare(b));
+      });
+
       const gruposMap = new Map<string, GrupoLoteria>();
       
       resultadosArr.forEach((r: ResultadoItem) => {
         const foto = loteriasMap.get(r.loteria) || '';
+        const tiradasActivasHoras = tiradasActivasPorLoteria.get(r.loteria) || [];
         if (!gruposMap.has(r.loteria)) {
           gruposMap.set(r.loteria, {
             nombre: r.loteria,
             foto: foto,
             tiradas: [],
+            tiradasActivas: tiradasActivasHoras,
           });
         }
         gruposMap.get(r.loteria)!.tiradas.push(r);
+      });
+
+      loteriasArr.forEach((l: LoteriaInfo) => {
+        if (!gruposMap.has(l.nombre) && l.activa) {
+          const tiradasActivasHoras = tiradasActivasPorLoteria.get(l.nombre) || [];
+          if (tiradasActivasHoras.length > 0) {
+            gruposMap.set(l.nombre, {
+              nombre: l.nombre,
+              foto: l.foto || '',
+              tiradas: [],
+              tiradasActivas: tiradasActivasHoras,
+            });
+          }
+        }
       });
 
       gruposMap.forEach((grupo) => {
@@ -83,16 +125,28 @@ const ResultadosHoy: React.FC = () => {
     }
   };
 
-  const splitDigits = (value: string | null): string[] => {
+  const splitDigits = (value: string | null | undefined): string[] => {
     if (!value) return [];
     return value.split('');
   };
 
-  const renderBolas = (value: string | null, count: number, isPrimary: boolean = false) => {
-    const digits = splitDigits(value);
+  const renderBolas = (value: string | null | undefined, count: number, isPrimary: boolean = false, isPending: boolean = false) => {
+    if (isPending) {
+      const balls = [];
+      for (let i = 0; i < count; i++) {
+        balls.push(
+          <div key={i} className="bola bola-pending">
+            <span className="bola-pending-text">?</span>
+          </div>
+        );
+      }
+      return balls;
+    }
+    
+    const digits = splitDigits(value ?? null);
     const balls = [];
     for (let i = 0; i < count; i++) {
-      const hasValue = digits[i] && digits[i] !== '?';
+      const hasValue = digits[i] && digits[i] !== '?' && digits[i] !== undefined;
       balls.push(
         <div 
           key={i} 
@@ -103,6 +157,21 @@ const ResultadosHoy: React.FC = () => {
       );
     }
     return balls;
+  };
+
+  const getProximaTirada = (horaActual: string, tiradasActivas: string[]): string | null => {
+    const ahora = new Date();
+    const horaParts = horaActual.split(':');
+    const horaActualMin = parseInt(horaParts[0]) * 60 + parseInt(horaParts[1]);
+    
+    for (const hora of tiradasActivas) {
+      const parts = hora.split(':');
+      const horaMin = parseInt(parts[0]) * 60 + parseInt(parts[1]);
+      if (horaMin > horaActualMin) {
+        return hora;
+      }
+    }
+    return tiradasActivas[0] || null;
   };
 
   if (loading) {
@@ -148,27 +217,54 @@ const ResultadosHoy: React.FC = () => {
               </div>
 
               <div className="tiradas-list">
-                {grupo.tiradas.map((tirada) => (
-                  <div key={tirada.id} className="tirada-resultado">
-                    <div className="tirada-hora">{tirada.hora}</div>
-                    
-                    <div className="picks-container">
-                      <div className="pick-group">
-                        <span className="pick-label">Pick 3</span>
-                        <div className="bolas-row">
-                          {renderBolas(tirada.resultado.pick_3, 3, true)}
-                        </div>
+                {grupo.tiradasActivas.map((hora) => {
+                  const tiradaConResultado = grupo.tiradas.find(t => t.hora === hora);
+                  const tieneResultado = tiradaConResultado?.resultado !== null && tiradaConResultado?.resultado !== undefined;
+                  
+                  return (
+                    <div key={hora} className={`tirada-resultado ${!tieneResultado ? 'tirada-pendiente' : ''}`}>
+                      <div className="tirada-hora">
+                        {hora}
+                        {!tieneResultado && (
+                          <span className="badge-pendiente">Pendiente</span>
+                        )}
                       </div>
                       
-                      <div className="pick-group">
-                        <span className="pick-label">Pick 4</span>
-                        <div className="bolas-row">
-                          {renderBolas(tirada.resultado.pick_4, 4, false)}
+                      <div className="picks-container">
+                        <div className="pick-group">
+                          <span className="pick-label">Pick 3</span>
+                          <div className="bolas-row">
+                            {renderBolas(
+                              tieneResultado ? tiradaConResultado.resultado?.pick_3 ?? null : null,
+                              3,
+                              true,
+                              !tieneResultado
+                            )}
+                          </div>
+                        </div>
+                        
+                        <div className="pick-group">
+                          <span className="pick-label">Pick 4</span>
+                          <div className="bolas-row">
+                            {renderBolas(
+                              tieneResultado ? tiradaConResultado.resultado?.pick_4 ?? null : null,
+                              4,
+                              false,
+                              !tieneResultado
+                            )}
+                          </div>
                         </div>
                       </div>
+
+                      {!tieneResultado && (
+                        <div className="proxima-tirada">
+                          <span className="proxima-icon">⏰</span>
+                          Próxima tirada: {getProximaTirada(hora, grupo.tiradasActivas) || 'Verifique'}
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           ))}

@@ -233,12 +233,16 @@ const Dashboard: React.FC = () => {
               <div className="form-group">
                 <label>Monto</label>
                 <input
-                  type="number"
+                  type="text"
                   value={extraccionData.monto}
-                  onChange={(e) => setExtraccionData({ monto: e.target.value })}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[^0-9.]/g, '');
+                    const parts = val.split('.');
+                    if (parts.length > 2) return;
+                    if (parts[1] && parts[1].length > 2) return;
+                    setExtraccionData({ monto: val });
+                  }}
                   placeholder="0.00"
-                  min="1"
-                  max={user.saldo_extraccion}
                   required
                 />
               </div>
