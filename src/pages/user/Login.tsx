@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import './Auth.css';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -20,45 +19,98 @@ const Login: React.FC = () => {
       await login(email, password);
       navigate('/');
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Error al iniciar sesión';
-      setError(errorMessage);
+      setError(err instanceof Error ? err.message : 'Error al iniciar sesión');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <h1>Iniciar Sesión</h1>
-        {error && <div className="error-message">{error}</div>}
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary via-primary-600 to-secondary p-4">
+      {/* Decorative elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/10 rounded-full blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-secondary/20 rounded-full blur-3xl" />
+      </div>
+
+      <div className="relative w-full max-w-md">
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-2xl shadow-2xl mb-4">
+            <span className="text-5xl">🎰</span>
           </div>
-          <div className="form-group">
-            <label htmlFor="password">Contraseña</label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          <button type="submit" disabled={loading}>
-            {loading ? 'Cargando...' : 'Iniciar Sesión'}
-          </button>
-        </form>
-        <p className="auth-link">
-          ¿No tienes cuenta? <Link to="/register">Regístrate</Link>
+          <h1 className="text-4xl font-bold text-white mb-2">Lotería</h1>
+          <p className="text-white/80">Tu oportunidad de ganar</p>
+        </div>
+
+        {/* Card */}
+        <div className="bg-white rounded-3xl shadow-modal p-8 animate-fade-in">
+          <h2 className="text-2xl font-bold text-gray-900 text-center mb-6">Iniciar Sesión</h2>
+          
+          {error && (
+            <div className="bg-red-50 text-red-600 px-4 py-3 rounded-xl mb-6 flex items-center gap-2">
+              <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className="text-sm">{error}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label htmlFor="email" className="label">Correo Electrónico</label>
+              <input
+                type="email"
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="input"
+                placeholder="tu@email.com"
+                required
+              />
+            </div>
+
+            <div>
+              <label htmlFor="password" className="label">Contraseña</label>
+              <input
+                type="password"
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="input"
+                placeholder="••••••••"
+                required
+              />
+            </div>
+
+            <button 
+              type="submit" 
+              disabled={loading}
+              className="btn btn-primary w-full py-4 text-lg"
+            >
+              {loading ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <>
+                  Iniciar Sesión
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                </>
+              )}
+            </button>
+          </form>
+
+          <p className="text-center mt-6 text-gray-600">
+            ¿No tienes cuenta?{' '}
+            <Link to="/register" className="text-primary font-semibold hover:underline">
+              Regístrate
+            </Link>
+          </p>
+        </div>
+
+        <p className="text-center text-white/60 mt-6 text-sm">
+          © 2026 Lotería. Todos los derechos reservados.
         </p>
       </div>
     </div>
