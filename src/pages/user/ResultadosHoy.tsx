@@ -235,7 +235,7 @@ const ResultadosHoy: React.FC = () => {
                           <span className="pick-label">Pick 3</span>
                           <div className="bolas-row">
                             {renderBolas(
-                              tieneResultado ? tiradaConResultado.resultado?.pick_3 ?? null : null,
+                              tieneResultado ? tiradaConResultado?.resultado?.pick_3 ?? null : null,
                               3,
                               true,
                               !tieneResultado
@@ -247,7 +247,7 @@ const ResultadosHoy: React.FC = () => {
                           <span className="pick-label">Pick 4</span>
                           <div className="bolas-row">
                             {renderBolas(
-                              tieneResultado ? tiradaConResultado.resultado?.pick_4 ?? null : null,
+                              tieneResultado ? tiradaConResultado?.resultado?.pick_4 ?? null : null,
                               4,
                               false,
                               !tieneResultado
