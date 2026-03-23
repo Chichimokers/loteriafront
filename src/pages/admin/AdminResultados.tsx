@@ -100,8 +100,9 @@ const AdminResultados: React.FC = () => {
     return tiradas.find(t => t.id === formData.tirada_id);
   };
 
-  const formatHora = (hora: string) => {
-    return hora.substring(0, 5);
+  const formatHora = (hora: string | undefined | null) => {
+    if (!hora) return '-';
+    return String(hora).substring(0, 5);
   };
 
   if (loading && tiradas.length === 0) {
