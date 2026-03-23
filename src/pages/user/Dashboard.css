@@ -123,3 +123,8 @@
   min-height: 80px;
   resize: vertical;
 }
+
+.modal .form-group input[type="number"] {
+  padding: 14px 12px;
+  font-size: 18px;
+}

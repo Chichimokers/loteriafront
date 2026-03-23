@@ -177,22 +177,20 @@ const Dashboard: React.FC = () => {
               </div>
               <div className="form-group">
                 <label>SMS de Confirmación</label>
-                <input
-                  type="text"
+                <textarea
                   value={acreditacionData.sms_confirmacion}
                   onChange={(e) => setAcreditacionData({ ...acreditacionData, sms_confirmacion: e.target.value })}
-                  maxLength={6}
-                  placeholder="Ingrese los 6 dígitos"
                   required
+                  rows={2}
                 />
               </div>
               <div className="form-group">
                 <label>ID de Transferencia</label>
-                <textarea
+                <input
+                  type="text"
                   value={acreditacionData.id_transferencia}
                   onChange={(e) => setAcreditacionData({ ...acreditacionData, id_transferencia: e.target.value })}
                   required
-                  rows={2}
                 />
               </div>
               <div className="modal-actions">
