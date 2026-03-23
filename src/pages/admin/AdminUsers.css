@@ -1,0 +1,8 @@
+.admin-users h2 {
+  margin-bottom: 24px;
+}
+
+.admin-users .admin-table td input {
+  width: 100px;
+  padding: 6px;
+}

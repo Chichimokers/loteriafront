@@ -1,0 +1,59 @@
+.dashboard h2 {
+  margin-bottom: 24px;
+}
+
+.saldo-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.saldo-card {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.saldo-card h3 {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.saldo-amount {
+  font-size: 32px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 16px;
+}
+
+.saldo-card.principal .saldo-amount {
+  color: #1a73e8;
+}
+
+.saldo-card.extraccion .saldo-amount {
+  color: #34a853;
+}
+
+.saldo-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-acreditar {
+  background-color: #1a73e8;
+  color: white;
+}
+
+.btn-extraer {
+  background-color: #34a853;
+  color: white;
+}
+
+.saldo-disponible {
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #666;
+}

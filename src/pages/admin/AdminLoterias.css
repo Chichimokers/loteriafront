@@ -1,0 +1,8 @@
+.admin-loterias h2 {
+  margin-bottom: 24px;
+}
+
+.admin-loterias .admin-table td input {
+  width: 150px;
+  padding: 6px;
+}
