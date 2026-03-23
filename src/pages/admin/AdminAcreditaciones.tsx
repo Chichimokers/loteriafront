@@ -54,10 +54,11 @@ const AdminAcreditaciones: React.FC = () => {
     }
   };
 
-  const formatTarjeta = (numero: string) => {
-    const cleaned = numero.replace(/\D/g, '');
+  const formatTarjeta = (numero: string | undefined | null) => {
+    if (!numero) return '-';
+    const cleaned = String(numero).replace(/\D/g, '');
     const match = cleaned.match(/^(\d{0,3})(\d{0,3})(\d{0,3})(\d{0,4})$/);
-    if (!match) return numero;
+    if (!match) return String(numero);
     const parts = [match[1], match[2], match[3], match[4]].filter(p => p);
     return parts.join('-');
   };
