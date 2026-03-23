@@ -78,9 +78,16 @@ const Dashboard: React.FC = () => {
     setError('');
     setMessage('');
 
-    const montoNum = Number(extraccionData.monto);
-    if (isNaN(montoNum) || montoNum <= 0) {
+    const montoRaw = extraccionData.monto;
+    if (!montoRaw || montoRaw.trim() === '') {
       setError('Ingrese un monto válido');
+      setLoading(false);
+      return;
+    }
+
+    const montoNum = parseFloat(montoRaw);
+    if (isNaN(montoNum) || montoNum <= 0) {
+      setError('Ingrese un monto válido mayor a 0');
       setLoading(false);
       return;
     }
@@ -231,19 +238,19 @@ const Dashboard: React.FC = () => {
             {error && <div className="error-message">{error}</div>}
             <form onSubmit={handleExtraer}>
               <div className="form-group">
-                <label>Monto</label>
+                <label>Monto (CUP)</label>
                 <input
-                  type="text"
+                  type="number"
+                  step="0.01"
+                  min="0.01"
                   value={extraccionData.monto}
                   onChange={(e) => {
-                    const val = e.target.value.replace(/[^0-9.]/g, '');
-                    const parts = val.split('.');
-                    if (parts.length > 2) return;
-                    if (parts[1] && parts[1].length > 2) return;
-                    setExtraccionData({ monto: val });
+                    const raw = e.target.value;
+                    if (raw === '' || /^\d*\.?\d{0,2}$/.test(raw)) {
+                      setExtraccionData({ monto: raw });
+                    }
                   }}
                   placeholder="0.00"
-                  required
                 />
               </div>
               <div className="modal-actions">

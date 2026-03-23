@@ -2,31 +2,23 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { lotteryService, resultadoService } from '../../services/api';
 import './AdminResultados.css';
 
+interface ResultadoHoy {
+  pick_3: string;
+  pick_4: string;
+  fecha: string;
+}
+
 interface Tirada {
   id: number;
   loteria: number;
   loteria_nombre: string;
   hora: string;
   activa: boolean;
-}
-
-interface Resultado {
-  id: number;
-  tirada: number;
-  tirada_info?: {
-    loteria_nombre: string;
-    hora: string;
-  };
-  loteria_nombre?: string;
-  hora?: string;
-  pick_3: string;
-  pick_4: string;
-  fecha: string;
+  resultado_hoy: ResultadoHoy | null;
 }
 
 const AdminResultados: React.FC = () => {
   const [tiradas, setTiradas] = useState<Tirada[]>([]);
-  const [resultados, setResultados] = useState<Resultado[]>([]);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     tirada_id: 0,
@@ -44,16 +36,9 @@ const AdminResultados: React.FC = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [tiradasData, resultadosData] = await Promise.all([
-        lotteryService.getTiradasActivas(),
-        resultadoService.getResultados(),
-      ]);
-      
+      const tiradasData = await lotteryService.getTiradasActivas();
       const tiradasArr = Array.isArray(tiradasData) ? tiradasData : (tiradasData as { results?: Tirada[] }).results || [];
       setTiradas(tiradasArr);
-      
-      const resultadosArr = Array.isArray(resultadosData) ? resultadosData : (resultadosData as { results?: Resultado[] }).results || [];
-      setResultados(resultadosArr);
     } catch (err) {
       console.error('Error loading data:', err);
     } finally {
@@ -111,16 +96,12 @@ const AdminResultados: React.FC = () => {
     }
   };
 
-  const getLoteriaNombre = (resultado: Resultado) => {
-    return resultado.tirada_info?.loteria_nombre || resultado.loteria_nombre || '-';
-  };
-
-  const getHora = (resultado: Resultado) => {
-    return resultado.tirada_info?.hora || resultado.hora || '-';
-  };
-
   const getTiradaSeleccionada = () => {
     return tiradas.find(t => t.id === formData.tirada_id);
+  };
+
+  const formatHora = (hora: string) => {
+    return hora.substring(0, 5);
   };
 
   if (loading && tiradas.length === 0) {
@@ -164,7 +145,8 @@ const AdminResultados: React.FC = () => {
                   className={`horario-btn ${formData.tirada_id === tirada.id ? 'selected' : ''}`}
                   onClick={() => handleTiradaChange(tirada.id)}
                 >
-                  <span className="horario-hora">{tirada.hora}</span>
+                  <span className="horario-hora">{formatHora(tirada.hora)}</span>
+                  {tirada.resultado_hoy && <span className="horario-check">✓</span>}
                 </button>
               ))
             )}
@@ -177,7 +159,7 @@ const AdminResultados: React.FC = () => {
         {formData.tirada_id > 0 && (
           <div className="tirada-seleccionada-info">
             <span className="info-icon">✓</span>
-            <span>{getTiradaSeleccionada()?.loteria_nombre} - {getTiradaSeleccionada()?.hora}</span>
+            <span>{getTiradaSeleccionada()?.loteria_nombre} - {formatHora(getTiradaSeleccionada()?.hora || '')}</span>
           </div>
         )}
         
@@ -212,10 +194,10 @@ const AdminResultados: React.FC = () => {
       </form>
 
       <div className="historico-section">
-        <h3>Histórico de Resultados</h3>
+        <h3>Resultados de Hoy</h3>
         
-        {resultados.length === 0 ? (
-          <p className="no-resultados">No hay resultados registrados</p>
+        {tiradas.length === 0 ? (
+          <p className="no-resultados">No hay tiradas activas</p>
         ) : (
           <table className="historico-table">
             <thead>
@@ -225,30 +207,44 @@ const AdminResultados: React.FC = () => {
                 <th>Hora</th>
                 <th>Pick 3</th>
                 <th>Pick 4</th>
-                <th>Fecha</th>
+                <th>Estado</th>
               </tr>
             </thead>
             <tbody>
-              {resultados.map((resultado) => (
-                <tr key={resultado.id}>
-                  <td>{resultado.id}</td>
-                  <td>{getLoteriaNombre(resultado)}</td>
-                  <td>{getHora(resultado)}</td>
+              {tiradas.map((tirada) => (
+                <tr key={tirada.id} className={tirada.resultado_hoy ? '' : 'row-pendiente'}>
+                  <td>{tirada.id}</td>
+                  <td>{tirada.loteria_nombre}</td>
+                  <td>{formatHora(tirada.hora)}</td>
                   <td>
-                    <span className="pick-display pick-3">
-                      {(resultado.pick_3 || '').split('').map((d, i) => (
-                        <span key={i} className="digit">{d}</span>
-                      ))}
-                    </span>
+                    {tirada.resultado_hoy ? (
+                      <span className="pick-display pick-3">
+                        {(tirada.resultado_hoy.pick_3 || '').split('').map((d, i) => (
+                          <span key={i} className="digit">{d}</span>
+                        ))}
+                      </span>
+                    ) : (
+                      <span className="badge-pendiente">Sin resultado</span>
+                    )}
                   </td>
                   <td>
-                    <span className="pick-display pick-4">
-                      {(resultado.pick_4 || '').split('').map((d, i) => (
-                        <span key={i} className="digit">{d}</span>
-                      ))}
-                    </span>
+                    {tirada.resultado_hoy ? (
+                      <span className="pick-display pick-4">
+                        {(tirada.resultado_hoy.pick_4 || '').split('').map((d, i) => (
+                          <span key={i} className="digit">{d}</span>
+                        ))}
+                      </span>
+                    ) : (
+                      <span className="badge-pendiente">Sin resultado</span>
+                    )}
                   </td>
-                  <td>{new Date(resultado.fecha).toLocaleString()}</td>
+                  <td>
+                    {tirada.resultado_hoy ? (
+                      <span className="badge-completo">Completo</span>
+                    ) : (
+                      <span className="badge-pendiente">Pendiente</span>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>

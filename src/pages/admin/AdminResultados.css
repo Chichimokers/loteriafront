@@ -73,9 +73,18 @@
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
+.horario-btn.selected .horario-check {
+  color: #90cdf4;
+}
+
 .horario-hora {
   font-weight: 700;
   font-size: 15px;
+}
+
+.horario-check {
+  font-size: 12px;
+  margin-top: 4px;
 }
 
 .no-horarios {
@@ -204,6 +213,32 @@
 .pick-display.pick-4 .digit {
   background: linear-gradient(145deg, #ff6b6b 0%, #d63031 100%);
   box-shadow: 0 2px 4px rgba(214, 48, 49, 0.3);
+}
+
+.badge-pendiente {
+  background: linear-gradient(135deg, #f6ad55 0%, #ed8936 100%);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.badge-completo {
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.row-pendiente {
+  background-color: #fffaf0;
+}
+
+.row-pendiente:hover {
+  background-color: #feebc8 !important;
 }
 
 @media (max-width: 768px) {
