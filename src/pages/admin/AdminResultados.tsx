@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { lotteryService, resultadoService } from '../../services/api';
 import './AdminResultados.css';
 
@@ -33,6 +33,7 @@ const AdminResultados: React.FC = () => {
     pick_3: '',
     pick_4: '',
   });
+  const [selectedLoteria, setSelectedLoteria] = useState<number>(0);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
@@ -60,6 +61,36 @@ const AdminResultados: React.FC = () => {
     }
   };
 
+  const tiradasPorLoteria = useMemo(() => {
+    const grouped = new Map<string, Tirada[]>();
+    tiradas.forEach((tirada) => {
+      if (!grouped.has(tirada.loteria_nombre)) {
+        grouped.set(tirada.loteria_nombre, []);
+      }
+      grouped.get(tirada.loteria_nombre)!.push(tirada);
+    });
+    grouped.forEach((tiradasList) => {
+      tiradasList.sort((a, b) => a.hora.localeCompare(b.hora));
+    });
+    return grouped;
+  }, [tiradas]);
+
+  const tiradasFiltradas = useMemo(() => {
+    if (selectedLoteria === 0) return [];
+    const tirada = tiradas.find(t => t.id === selectedLoteria);
+    if (!tirada) return [];
+    return tiradas.filter(t => t.loteria_nombre === tirada.loteria_nombre);
+  }, [tiradas, selectedLoteria]);
+
+  const handleLoteriaChange = (loteriaId: number) => {
+    setSelectedLoteria(loteriaId);
+    setFormData({ ...formData, tirada_id: 0 });
+  };
+
+  const handleTiradaChange = (tiradaId: number) => {
+    setFormData({ ...formData, tirada_id: tiradaId });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -70,6 +101,7 @@ const AdminResultados: React.FC = () => {
       await resultadoService.createResultado(formData);
       setMessage('Resultados ingresados correctamente');
       setFormData({ tirada_id: 0, pick_3: '', pick_4: '' });
+      setSelectedLoteria(0);
       await loadData();
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Error al ingresar resultados';
@@ -87,6 +119,10 @@ const AdminResultados: React.FC = () => {
     return resultado.tirada_info?.hora || resultado.hora || '-';
   };
 
+  const getTiradaSeleccionada = () => {
+    return tiradas.find(t => t.id === formData.tirada_id);
+  };
+
   if (loading && tiradas.length === 0) {
     return <div className="admin-resultados">Cargando...</div>;
   }
@@ -100,45 +136,77 @@ const AdminResultados: React.FC = () => {
       
       <form onSubmit={handleSubmit} className="resultados-form">
         <div className="form-group">
-          <label>Tirada</label>
+          <label>Seleccionar Lotería</label>
           <select
-            value={formData.tirada_id}
-            onChange={(e) => setFormData({ ...formData, tirada_id: Number(e.target.value) })}
+            value={selectedLoteria === 0 ? '' : selectedLoteria}
+            onChange={(e) => handleLoteriaChange(Number(e.target.value))}
             required
           >
-            <option value={0}>Seleccionar Tirada</option>
-            {tiradas.map((tirada) => (
-              <option key={tirada.id} value={tirada.id}>
-                {tirada.loteria_nombre} - {tirada.hora}
+            <option value="">-- Seleccionar Lotería --</option>
+            {Array.from(tiradasPorLoteria.keys()).map((loteriaNombre) => (
+              <option key={loteriaNombre} value={tiradasPorLoteria.get(loteriaNombre)?.[0]?.id || ''}>
+                {loteriaNombre}
               </option>
             ))}
           </select>
         </div>
-        
+
         <div className="form-group">
-          <label>Pick 3</label>
-          <input
-            type="text"
-            value={formData.pick_3}
-            onChange={(e) => setFormData({ ...formData, pick_3: e.target.value.replace(/\D/g, '').slice(0, 3) })}
-            placeholder="3 dígitos"
-            maxLength={3}
-            required
-          />
+          <label>Seleccionar Horario</label>
+          <div className="horarios-grid">
+            {tiradasFiltradas.length === 0 ? (
+              <p className="no-horarios">Seleccione primero una lotería</p>
+            ) : (
+              tiradasFiltradas.map((tirada) => (
+                <button
+                  key={tirada.id}
+                  type="button"
+                  className={`horario-btn ${formData.tirada_id === tirada.id ? 'selected' : ''}`}
+                  onClick={() => handleTiradaChange(tirada.id)}
+                >
+                  <span className="horario-hora">{tirada.hora}</span>
+                </button>
+              ))
+            )}
+          </div>
+          {formData.tirada_id === 0 && selectedLoteria !== 0 && (
+            <p className="horario-required">Seleccione un horario</p>
+          )}
+        </div>
+
+        {formData.tirada_id > 0 && (
+          <div className="tirada-seleccionada-info">
+            <span className="info-icon">✓</span>
+            <span>{getTiradaSeleccionada()?.loteria_nombre} - {getTiradaSeleccionada()?.hora}</span>
+          </div>
+        )}
+        
+        <div className="picks-inputs">
+          <div className="form-group">
+            <label>Pick 3</label>
+            <input
+              type="text"
+              value={formData.pick_3}
+              onChange={(e) => setFormData({ ...formData, pick_3: e.target.value.replace(/\D/g, '').slice(0, 3) })}
+              placeholder="3 dígitos"
+              maxLength={3}
+              required
+            />
+          </div>
+          
+          <div className="form-group">
+            <label>Pick 4</label>
+            <input
+              type="text"
+              value={formData.pick_4}
+              onChange={(e) => setFormData({ ...formData, pick_4: e.target.value.replace(/\D/g, '').slice(0, 4) })}
+              placeholder="4 dígitos"
+              maxLength={4}
+            />
+          </div>
         </div>
         
-        <div className="form-group">
-          <label>Pick 4</label>
-          <input
-            type="text"
-            value={formData.pick_4}
-            onChange={(e) => setFormData({ ...formData, pick_4: e.target.value.replace(/\D/g, '').slice(0, 4) })}
-            placeholder="4 dígitos"
-            maxLength={4}
-          />
-        </div>
-        
-        <button type="submit" disabled={loading}>
+        <button type="submit" disabled={loading || formData.tirada_id === 0}>
           {loading ? 'Guardando...' : 'Guardar Resultados'}
         </button>
       </form>

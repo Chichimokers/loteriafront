@@ -78,7 +78,7 @@ const ResultadosHoy: React.FC = () => {
         tiradasActivasPorLoteria.get(t.loteria_nombre)!.push(t.hora);
       });
 
-      tiradasActivasPorLoteria.forEach((horas, loteria) => {
+      tiradasActivasPorLoteria.forEach((horas) => {
         horas.sort((a, b) => a.localeCompare(b));
       });
 
@@ -160,7 +160,6 @@ const ResultadosHoy: React.FC = () => {
   };
 
   const getProximaTirada = (horaActual: string, tiradasActivas: string[]): string | null => {
-    const ahora = new Date();
     const horaParts = horaActual.split(':');
     const horaActualMin = parseInt(horaParts[0]) * 60 + parseInt(horaParts[1]);
     
