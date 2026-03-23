@@ -4,15 +4,8 @@ import { useAuth } from '../../context/AuthContext';
 import './UserLayout.css';
 
 const UserLayout: React.FC = () => {
-  const { user, logout, refreshUser } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
-
-  React.useEffect(() => {
-    if (user && typeof user.saldo_principal === 'number') {
-      refreshUser();
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
 
   const handleLogout = () => {
     logout();
