@@ -201,4 +201,11 @@ export const modalidadService = {
   },
 };
 
+export const adminService = {
+  getMetricas: async () => {
+    const response = await api.get('/admin/metricas/');
+    return response.data;
+  },
+};
+
 export default api;

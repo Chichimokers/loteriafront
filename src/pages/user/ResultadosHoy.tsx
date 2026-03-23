@@ -1,23 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { lotteryService } from '../../services/api';
-import './ResultadosHoy.css';
 
 interface ResultadoItem {
   id: number;
   loteria: string;
   hora: string;
-  resultado: {
-    pick_3: string | null;
-    pick_4: string | null;
-  } | null;
+  resultado: { pick_3: string | null; pick_4: string | null } | null;
 }
 
 interface TiradaActiva {
   id: number;
-  loteria: number;
   loteria_nombre: string;
   hora: string;
-  activa: boolean;
 }
 
 interface LoteriaInfo {
@@ -37,20 +31,16 @@ interface GrupoLoteria {
 const ResultadosHoy: React.FC = () => {
   const [grupos, setGrupos] = useState<GrupoLoteria[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     loadData();
   }, []);
 
-  const loadData = async (isRefresh: boolean = false) => {
-    if (isRefresh) {
-      setRefreshing(true);
-    } else {
-      setLoading(true);
-    }
-    setError('');
+  const loadData = async (isRefresh = false) => {
+    if (isRefresh) setRefreshing(true);
+    else setLoading(true);
+
     try {
       const [loteriasData, resultadosData, tiradasActivasData] = await Promise.all([
         lotteryService.getLoterias(),
@@ -58,17 +48,15 @@ const ResultadosHoy: React.FC = () => {
         lotteryService.getTiradasActivas(),
       ]);
 
-      const loteriasArr = Array.isArray(loteriasData) 
-        ? loteriasData 
+      const loteriasArr = Array.isArray(loteriasData)
+        ? loteriasData
         : (loteriasData as { results?: LoteriaInfo[] }).results || [];
 
       const loteriasMap = new Map<string, string>();
-      loteriasArr.forEach((l: LoteriaInfo) => {
-        loteriasMap.set(l.nombre, l.foto || '');
-      });
+      loteriasArr.forEach((l: LoteriaInfo) => loteriasMap.set(l.nombre, l.foto || ''));
 
-      const resultadosArr = Array.isArray(resultadosData) 
-        ? resultadosData 
+      const resultadosArr = Array.isArray(resultadosData)
+        ? resultadosData
         : (resultadosData as { results?: ResultadoItem[] }).results || [];
 
       const tiradasActivasArr = Array.isArray(tiradasActivasData)
@@ -83,22 +71,13 @@ const ResultadosHoy: React.FC = () => {
         tiradasActivasPorLoteria.get(t.loteria_nombre)!.push(t.hora);
       });
 
-      tiradasActivasPorLoteria.forEach((horas) => {
-        horas.sort((a, b) => a.localeCompare(b));
-      });
-
       const gruposMap = new Map<string, GrupoLoteria>();
-      
+
       resultadosArr.forEach((r: ResultadoItem) => {
         const foto = loteriasMap.get(r.loteria) || '';
         const tiradasActivasHoras = tiradasActivasPorLoteria.get(r.loteria) || [];
         if (!gruposMap.has(r.loteria)) {
-          gruposMap.set(r.loteria, {
-            nombre: r.loteria,
-            foto: foto,
-            tiradas: [],
-            tiradasActivas: tiradasActivasHoras,
-          });
+          gruposMap.set(r.loteria, { nombre: r.loteria, foto, tiradas: [], tiradasActivas: tiradasActivasHoras });
         }
         gruposMap.get(r.loteria)!.tiradas.push(r);
       });
@@ -107,214 +86,123 @@ const ResultadosHoy: React.FC = () => {
         if (!gruposMap.has(l.nombre) && l.activa) {
           const tiradasActivasHoras = tiradasActivasPorLoteria.get(l.nombre) || [];
           if (tiradasActivasHoras.length > 0) {
-            gruposMap.set(l.nombre, {
-              nombre: l.nombre,
-              foto: l.foto || '',
-              tiradas: [],
-              tiradasActivas: tiradasActivasHoras,
-            });
+            gruposMap.set(l.nombre, { nombre: l.nombre, foto: l.foto || '', tiradas: [], tiradasActivas: tiradasActivasHoras });
           }
         }
       });
 
       gruposMap.forEach((grupo) => {
         grupo.tiradas.sort((a, b) => a.hora.localeCompare(b.hora));
+        grupo.tiradasActivas.sort((a, b) => a.localeCompare(b));
       });
 
       setGrupos(Array.from(gruposMap.values()));
     } catch (err) {
       console.error('Error loading resultados:', err);
-      setError('Error al cargar los resultados');
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
   };
 
-  const splitDigits = (value: string | null | undefined): string[] => {
-    if (!value) return [];
-    return value.split('');
-  };
-
-  const renderBolas = (value: string | null | undefined, count: number, isPrimary: boolean = false, isPending: boolean = false) => {
-    if (isPending) {
-      const balls = [];
-      for (let i = 0; i < count; i++) {
-        balls.push(
-          <div key={i} className="bola bola-pending">
-            <span className="bola-pending-text">?</span>
-          </div>
-        );
-      }
-      return balls;
+  const renderBola = (digit: string | null | undefined, isPending: boolean) => {
+    if (isPending || !digit) {
+      return <div className="bola-pending">{digit || '?'}</div>;
     }
-    
-    const digits = splitDigits(value ?? null);
-    const balls = [];
-    for (let i = 0; i < count; i++) {
-      const hasValue = digits[i] && digits[i] !== '?' && digits[i] !== undefined;
-      balls.push(
-        <div 
-          key={i} 
-          className={`bola ${hasValue ? (isPrimary ? 'bola-primary' : 'bola-secondary') : 'bola-waiting'}`}
-        >
-          {hasValue ? digits[i] : '?'}
-        </div>
-      );
-    }
-    return balls;
-  };
-
-  const getProximaTirada = (horaActual: string, tiradasActivas: string[]): string | null => {
-    const horaParts = horaActual.split(':');
-    const horaActualMin = parseInt(horaParts[0]) * 60 + parseInt(horaParts[1]);
-    
-    for (const hora of tiradasActivas) {
-      const parts = hora.split(':');
-      const horaMin = parseInt(parts[0]) * 60 + parseInt(parts[1]);
-      if (horaMin > horaActualMin) {
-        return hora;
-      }
-    }
-    return tiradasActivas[0] || null;
-  };
-
-  const getHoraActual = (): string => {
-    const now = new Date();
-    return now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false });
+    return <div className="bola">{digit}</div>;
   };
 
   if (loading) {
     return (
       <div className="resultados-hoy">
-        <div className="resultados-header">
+        <div className="rh-header">
           <h2>Resultados de Hoy</h2>
-          <span className="header-date">{new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+          <p>{new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
         </div>
-        <div className="loading-state">Cargando resultados...</div>
+        <div className="rh-loading">
+          <div className="spinner"></div>
+          <p>Cargando...</p>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="resultados-hoy">
-      <div className="resultados-header">
-        <div className="header-content">
+      <div className="rh-header">
+        <div>
           <h2>Resultados de Hoy</h2>
-          <span className="header-date">{new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+          <p>{new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
         </div>
-        <button onClick={() => loadData(true)} className="btn-refresh" disabled={refreshing}>
-          {refreshing ? (
-            <>
-              <span className="refresh-spinner"></span>
-              Actualizando...
-            </>
-          ) : (
-            <>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
-              </svg>
-              Actualizar
-            </>
-          )}
+        <button onClick={() => loadData(true)} disabled={refreshing} className="rh-refresh">
+          {refreshing ? 'Actualizando...' : 'Actualizar'}
         </button>
       </div>
 
-      {error && <div className="error-message">{error}</div>}
-
-      <div className="resultados-stats">
-        <div className="stat-item">
-          <span className="stat-number">{grupos.length}</span>
-          <span className="stat-label">Loterías</span>
-        </div>
-        <div className="stat-item">
-          <span className="stat-number">{grupos.reduce((acc, g) => acc + g.tiradasActivas.length, 0)}</span>
-          <span className="stat-label">Tiradas</span>
-        </div>
-        <div className="stat-item">
-          <span className="stat-number">{grupos.reduce((acc, g) => acc + g.tiradas.filter(t => t.resultado).length, 0)}</span>
-          <span className="stat-label">Resultados</span>
-        </div>
-      </div>
-
       {grupos.length === 0 ? (
-        <div className="no-resultados">
-          <div className="no-resultados-content">
-            <span className="no-resultados-icon">🎰</span>
-            <p>No hay resultados para hoy</p>
-            <span className="no-resultados-subtitle">Vuelve más tarde para ver los resultados</span>
-          </div>
+        <div className="rh-empty">
+          <span>🎰</span>
+          <p>Sin resultados aún</p>
         </div>
       ) : (
-        <div className="loterias-grid">
+        <div className="rh-grid">
           {grupos.map((grupo) => {
-            const resultadosCount = grupo.tiradas.filter(t => t.resultado).length;
-            const pendingCount = grupo.tiradasActivas.length - resultadosCount;
-            
+            const resultadosCount = grupo.tiradas.filter((t) => t.resultado).length;
             return (
-              <div key={grupo.nombre} className="loteria-resultado-card">
-                <div className="loteria-header">
-                  <div className="loteria-badge">
-                    {resultadosCount > 0 ? `${resultadosCount} resultados` : 'Pendiente'}
-                  </div>
+              <div key={grupo.nombre} className="rh-card">
+                <div className="rh-card-header">
                   {grupo.foto ? (
-                    <img src={grupo.foto} alt={grupo.nombre} className="loteria-foto" />
+                    <img src={grupo.foto} alt={grupo.nombre} className="rh-card-img" />
                   ) : (
-                    <div className="loteria-foto-placeholder">
-                      {grupo.nombre.charAt(0)}
-                    </div>
+                    <div className="rh-card-img-placeholder">{grupo.nombre.charAt(0)}</div>
                   )}
-                  <h3>{grupo.nombre}</h3>
-                  <div className="loteria-meta">
-                    <span className="meta-dot"></span>
-                    <span>{grupo.tiradasActivas.length} tiradas</span>
+                  <div className="rh-card-info">
+                    <h3>{grupo.nombre}</h3>
+                    <span>{resultadosCount}/{grupo.tiradasActivas.length} resultados</span>
                   </div>
                 </div>
 
-                <div className="tiradas-list">
+                <div className="rh-tiradas">
                   {grupo.tiradasActivas.map((hora) => {
-                    const tiradaConResultado = grupo.tiradas.find(t => t.hora === hora);
-                    const tieneResultado = tiradaConResultado?.resultado !== null && tiradaConResultado?.resultado !== undefined;
-                    
+                    const tirada = grupo.tiradas.find((t) => t.hora === hora);
+                    const tieneResultado = tirada?.resultado !== null && tirada?.resultado !== undefined;
+                    const pick3 = tirada?.resultado?.pick_3;
+                    const pick4 = tirada?.resultado?.pick_4;
+
                     return (
-                      <div key={hora} className={`tirada-resultado ${!tieneResultado ? 'tirada-pendiente' : ''}`}>
-                        <div className="tirada-hora">
+                      <div key={hora} className={`rh-tirada ${!tieneResultado ? 'rh-tirada-pending' : ''}`}>
+                        <div className="rh-tirada-hora">
+                          <span>🕐</span>
                           {hora}
-                          {!tieneResultado && (
-                            <span className="badge-pendiente">Pendiente</span>
-                          )}
-                        </div>
-                        
-                        <div className="picks-container">
-                          <div className="pick-group">
-                            <span className="pick-label">Pick 3</span>
-                            <div className="bolas-row">
-                              {renderBolas(
-                                tieneResultado ? tiradaConResultado?.resultado?.pick_3 ?? null : null,
-                                3,
-                                true,
-                                !tieneResultado
-                              )}
-                            </div>
-                          </div>
-                          
-                          <div className="pick-group">
-                            <span className="pick-label">Pick 4</span>
-                            <div className="bolas-row">
-                              {renderBolas(
-                                tieneResultado ? tiradaConResultado?.resultado?.pick_4 ?? null : null,
-                                4,
-                                false,
-                                !tieneResultado
-                              )}
-                            </div>
-                          </div>
+                          {!tieneResultado && <span className="rh-pending-badge">Pendiente</span>}
                         </div>
 
-                        {!tieneResultado && (
-                          <div className="proxima-tirada">
-                            <span className="proxima-icon">⏰</span>
-                            <span>Próxima: {getProximaTirada(hora, grupo.tiradasActivas) || 'Pronto'}</span>
+                        {tieneResultado ? (
+                          <div className="rh-picks">
+                            {pick3 && (
+                              <div className="rh-pick">
+                                <span className="rh-pick-label">Pick 3</span>
+                                <div className="rh-bolas">
+                                  {pick3.split('').map((d, i) => (
+                                    <span key={i} className="bola bola-3">{d}</span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            {pick4 && (
+                              <div className="rh-pick">
+                                <span className="rh-pick-label">Pick 4</span>
+                                <div className="rh-bolas">
+                                  {pick4.split('').map((d, i) => (
+                                    <span key={i} className="bola bola-4">{d}</span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="rh-pending-info">
+                            <span>⏰ Esperando resultados...</span>
                           </div>
                         )}
                       </div>

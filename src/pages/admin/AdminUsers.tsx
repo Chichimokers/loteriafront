@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { usuarioService } from '../../services/api';
-import './AdminTables.css';
 
 interface Usuario {
   id: number;
@@ -9,8 +8,9 @@ interface Usuario {
   saldo_principal: number | string;
   saldo_extraccion: number | string;
   banco: string;
+  tarjeta_bancaria: string;
+  fecha_registro: string;
   is_active: boolean;
-  date_joined: string;
 }
 
 const AdminUsers: React.FC = () => {
@@ -38,6 +38,20 @@ const AdminUsers: React.FC = () => {
   const getSaldo = (saldo: number | string) => {
     const num = typeof saldo === 'string' ? parseFloat(saldo) : saldo;
     return num.toFixed(2);
+  };
+
+  const formatFecha = (fecha: string) => {
+    if (!fecha) return '-';
+    return new Date(fecha).toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  };
+
+  const formatTarjeta = (tarjeta: string) => {
+    if (!tarjeta) return '-';
+    return tarjeta;
   };
 
   const handleEdit = (usuario: Usuario) => {
@@ -68,72 +82,189 @@ const AdminUsers: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="admin-users">Cargando...</div>;
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
   }
 
   return (
-    <div className="admin-users">
-      <h2>Gestión de Usuarios</h2>
-      
-      <table className="admin-table">
-        <thead>
-          <tr>
-            <th>Email</th>
-            <th>Móvil</th>
-            <th>Saldo Principal</th>
-            <th>Saldo Extracción</th>
-            <th>Banco</th>
-            <th>Registrado</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {usuarios.map((usuario) => (
-            <tr key={usuario.id}>
-              <td>{usuario.email}</td>
-              <td>{usuario.movil}</td>
-              <td>
-                {editingId === usuario.id ? (
-                  <input
-                    type="number"
-                    value={editData.saldo_principal}
-                    onChange={(e) => setEditData({ ...editData, saldo_principal: Number(e.target.value) })}
-                  />
-                ) : (
-                  getSaldo(usuario.saldo_principal)
-                )}
-              </td>
-              <td>
-                {editingId === usuario.id ? (
-                  <input
-                    type="number"
-                    value={editData.saldo_extraccion}
-                    onChange={(e) => setEditData({ ...editData, saldo_extraccion: Number(e.target.value) })}
-                  />
-                ) : (
-                  getSaldo(usuario.saldo_extraccion)
-                )}
-              </td>
-              <td>{usuario.banco}</td>
-              <td>{new Date(usuario.date_joined).toLocaleDateString()}</td>
-              <td>{usuario.is_active ? 'Activo' : 'Inactivo'}</td>
-              <td>
-                {editingId === usuario.id ? (
-                  <button onClick={() => handleSave(usuario.id)}>Guardar</button>
-                ) : (
-                  <>
-                    <button onClick={() => handleEdit(usuario)}>Editar</button>
-                    <button onClick={() => handleToggleActive(usuario)}>
-                      {usuario.is_active ? 'Bloquear' : 'Activar'}
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-gray-900">Usuarios</h1>
+        <button onClick={loadUsuarios} className="btn btn-ghost">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          Actualizar
+        </button>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="bg-white p-4 rounded-xl shadow-sm">
+          <p className="text-sm text-gray-500">Total</p>
+          <p className="text-2xl font-bold text-gray-900">{usuarios.length}</p>
+        </div>
+        <div className="bg-white p-4 rounded-xl shadow-sm">
+          <p className="text-sm text-gray-500">Activos</p>
+          <p className="text-2xl font-bold text-green-600">{usuarios.filter(u => u.is_active).length}</p>
+        </div>
+        <div className="bg-white p-4 rounded-xl shadow-sm">
+          <p className="text-sm text-gray-500">Inactivos</p>
+          <p className="text-2xl font-bold text-red-600">{usuarios.filter(u => !u.is_active).length}</p>
+        </div>
+        <div className="bg-white p-4 rounded-xl shadow-sm">
+          <p className="text-sm text-gray-500">Saldo Total</p>
+          <p className="text-2xl font-bold text-primary">
+            {usuarios.reduce((acc, u) => acc + (typeof u.saldo_principal === 'number' ? u.saldo_principal : parseFloat(u.saldo_principal) || 0), 0).toFixed(2)} CUP
+          </p>
+        </div>
+      </div>
+
+      {usuarios.length === 0 ? (
+        <div className="bg-white p-8 rounded-xl text-center">
+          <span className="text-4xl">👥</span>
+          <p className="mt-2 text-gray-600">No hay usuarios registrados</p>
+        </div>
+      ) : (
+        <>
+          {/* Cards para móvil */}
+          <div className="lg:hidden space-y-3">
+            {usuarios.map((usuario) => (
+              <div key={usuario.id} className="bg-white p-4 rounded-xl shadow-sm space-y-3">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <p className="font-semibold text-gray-900">{usuario.email}</p>
+                    <p className="text-sm text-gray-500">📱 {usuario.movil}</p>
+                  </div>
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${usuario.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                    {usuario.is_active ? 'Activo' : 'Inactivo'}
+                  </span>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <p className="text-gray-500">Banco</p>
+                    <p className="font-medium">{usuario.banco || '-'}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Tarjeta</p>
+                    <p className="font-medium">{formatTarjeta(usuario.tarjeta_bancaria)}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Saldo Principal</p>
+                    <p className="font-bold text-gray-900">{getSaldo(usuario.saldo_principal)} CUP</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Saldo Extracción</p>
+                    <p className="font-bold text-gray-900">{getSaldo(usuario.saldo_extraccion)} CUP</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Registrado</p>
+                    <p className="font-medium">{formatFecha(usuario.fecha_registro)}</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 pt-2 border-t">
+                  {editingId === usuario.id ? (
+                    <button onClick={() => handleSave(usuario.id)} className="flex-1 py-2 bg-success text-white rounded-lg text-sm font-medium">
+                      Guardar
                     </button>
-                  </>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+                  ) : (
+                    <>
+                      <button onClick={() => handleEdit(usuario)} className="flex-1 py-2 bg-primary text-white rounded-lg text-sm font-medium">
+                        Editar
+                      </button>
+                      <button onClick={() => handleToggleActive(usuario)} className={`flex-1 py-2 rounded-lg text-sm font-medium ${usuario.is_active ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                        {usuario.is_active ? 'Bloquear' : 'Activar'}
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Tabla para PC */}
+          <div className="hidden lg:block bg-white rounded-xl shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="text-left p-4 text-sm font-semibold text-gray-600">Email</th>
+                    <th className="text-left p-4 text-sm font-semibold text-gray-600">Móvil</th>
+                    <th className="text-left p-4 text-sm font-semibold text-gray-600">Banco</th>
+                    <th className="text-left p-4 text-sm font-semibold text-gray-600">Tarjeta</th>
+                    <th className="text-left p-4 text-sm font-semibold text-gray-600">Saldo Principal</th>
+                    <th className="text-left p-4 text-sm font-semibold text-gray-600">Saldo Extracción</th>
+                    <th className="text-left p-4 text-sm font-semibold text-gray-600">Registrado</th>
+                    <th className="text-left p-4 text-sm font-semibold text-gray-600">Estado</th>
+                    <th className="text-left p-4 text-sm font-semibold text-gray-600">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {usuarios.map((usuario) => (
+                    <tr key={usuario.id} className="hover:bg-gray-50">
+                      <td className="p-4 text-sm text-gray-900 font-medium">{usuario.email}</td>
+                      <td className="p-4 text-sm text-gray-600">{usuario.movil}</td>
+                      <td className="p-4 text-sm text-gray-600">{usuario.banco || '-'}</td>
+                      <td className="p-4 text-sm text-gray-600">{formatTarjeta(usuario.tarjeta_bancaria)}</td>
+                      <td className="p-4 text-sm font-bold text-gray-900">
+                        {editingId === usuario.id ? (
+                          <input
+                            type="number"
+                            value={editData.saldo_principal}
+                            onChange={(e) => setEditData({ ...editData, saldo_principal: Number(e.target.value) })}
+                            className="w-24 p-1 border rounded"
+                          />
+                        ) : (
+                          `${getSaldo(usuario.saldo_principal)} CUP`
+                        )}
+                      </td>
+                      <td className="p-4 text-sm font-bold text-gray-900">
+                        {editingId === usuario.id ? (
+                          <input
+                            type="number"
+                            value={editData.saldo_extraccion}
+                            onChange={(e) => setEditData({ ...editData, saldo_extraccion: Number(e.target.value) })}
+                            className="w-24 p-1 border rounded"
+                          />
+                        ) : (
+                          `${getSaldo(usuario.saldo_extraccion)} CUP`
+                        )}
+                      </td>
+                      <td className="p-4 text-sm text-gray-600">{formatFecha(usuario.fecha_registro)}</td>
+                      <td className="p-4">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${usuario.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                          {usuario.is_active ? 'Activo' : 'Inactivo'}
+                        </span>
+                      </td>
+                      <td className="p-4">
+                        {editingId === usuario.id ? (
+                          <button onClick={() => handleSave(usuario.id)} className="text-success font-medium text-sm">
+                            Guardar
+                          </button>
+                        ) : (
+                          <div className="flex gap-2">
+                            <button onClick={() => handleEdit(usuario)} className="text-primary font-medium text-sm">
+                              Editar
+                            </button>
+                            <button onClick={() => handleToggleActive(usuario)} className="text-gray-500 hover:text-gray-700 text-sm">
+                              {usuario.is_active ? 'Bloquear' : 'Activar'}
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };

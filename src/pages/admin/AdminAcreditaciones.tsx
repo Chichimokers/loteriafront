@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { acreditacionService } from '../../services/api';
-import './AdminTables.css';
 
 interface Acreditacion {
   id: number;
   usuario_email: string;
-  tarjeta: string;
+  tarjeta_numero: string;
   monto: number | string;
   sms_confirmacion: string;
   id_transferencia: string;
@@ -20,7 +19,6 @@ const AdminAcreditaciones: React.FC = () => {
 
   useEffect(() => {
     loadAcreditaciones();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter]);
 
   const loadAcreditaciones = async () => {
@@ -57,72 +55,154 @@ const AdminAcreditaciones: React.FC = () => {
   const formatTarjeta = (numero: string | undefined | null) => {
     if (!numero) return '-';
     const cleaned = String(numero).replace(/\D/g, '');
-    const match = cleaned.match(/^(\d{0,3})(\d{0,3})(\d{0,3})(\d{0,4})$/);
-    if (!match) return String(numero);
-    const parts = [match[1], match[2], match[3], match[4]].filter(p => p);
-    return parts.join('-');
+    if (cleaned.length < 16) return String(numero);
+    return cleaned.replace(/(.{4})/g, '$1 ').trim();
+  };
+
+  const formatFecha = (fecha: string) => {
+    return new Date(fecha).toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
   if (loading) {
-    return <div className="admin-acreditaciones">Cargando...</div>;
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
   }
 
   return (
-    <div className="admin-acreditaciones">
-      <h2>Acreditaciones</h2>
-      
-      <div className="filter-buttons">
-        <button onClick={() => setFilter('pendiente')} className={filter === 'pendiente' ? 'active' : ''}>
-          Pendientes
-        </button>
-        <button onClick={() => setFilter('aprobada')} className={filter === 'aprobada' ? 'active' : ''}>
-          Aprobadas
-        </button>
-        <button onClick={() => setFilter('rechazada')} className={filter === 'rechazada' ? 'active' : ''}>
-          Rechazadas
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-gray-900">Acreditaciones</h1>
+        <button onClick={loadAcreditaciones} className="btn btn-ghost">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          Actualizar
         </button>
       </div>
-      
-      <table className="admin-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Usuario</th>
-            <th>Tarjeta</th>
-            <th>Monto</th>
-            <th>SMS</th>
-            <th>ID Transferencia</th>
-            <th>Fecha</th>
-            {filter === 'pendiente' && <th>Acciones</th>}
-          </tr>
-        </thead>
-          <tbody>
+
+      <div className="flex gap-2 overflow-x-auto pb-2">
+        {[
+          { key: 'pendiente', label: 'Pendientes' },
+          { key: 'aprobada', label: 'Aprobadas' },
+          { key: 'rechazada', label: 'Rechazadas' },
+        ].map((f) => (
+          <button
+            key={f.key}
+            onClick={() => setFilter(f.key as typeof filter)}
+            className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+              filter === f.key
+                ? 'bg-primary text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+      {acreditaciones.length === 0 ? (
+        <div className="bg-white p-8 rounded-xl text-center">
+          <span className="text-4xl">💰</span>
+          <p className="mt-2 text-gray-600">No hay acreditaciones en este estado</p>
+        </div>
+      ) : (
+        <>
+          {/* Tabla PC */}
+          <div className="hidden lg:block bg-white rounded-xl shadow-sm overflow-hidden">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b">
+                <tr>
+                  <th className="text-left p-4 text-sm font-semibold text-gray-600">ID</th>
+                  <th className="text-left p-4 text-sm font-semibold text-gray-600">Usuario</th>
+                  <th className="text-left p-4 text-sm font-semibold text-gray-600">Tarjeta</th>
+                  <th className="text-left p-4 text-sm font-semibold text-gray-600">Monto</th>
+                  <th className="text-left p-4 text-sm font-semibold text-gray-600">Fecha</th>
+                  {filter === 'pendiente' && <th className="text-left p-4 text-sm font-semibold text-gray-600">Acciones</th>}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {acreditaciones.map((acreditacion) => {
+                  const montoNum = typeof acreditacion.monto === 'string' ? parseFloat(acreditacion.monto) : acreditacion.monto;
+                  return (
+                    <tr key={acreditacion.id} className="hover:bg-gray-50">
+                      <td className="p-4 text-sm text-gray-900">#{acreditacion.id}</td>
+                      <td className="p-4 text-sm text-gray-600">{acreditacion.usuario_email}</td>
+                      <td className="p-4 text-sm text-gray-600 font-mono">{formatTarjeta(acreditacion.tarjeta_numero)}</td>
+                      <td className="p-4 text-sm font-bold text-gray-900">{montoNum.toFixed(2)} CUP</td>
+                      <td className="p-4 text-sm text-gray-600">{formatFecha(acreditacion.fecha)}</td>
+                      {filter === 'pendiente' && (
+                        <td className="p-4">
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleApprove(acreditacion.id)}
+                              className="px-3 py-1 bg-green-500 text-white rounded text-xs font-medium hover:bg-green-600"
+                            >
+                              Aprobar
+                            </button>
+                            <button
+                              onClick={() => handleReject(acreditacion.id)}
+                              className="px-3 py-1 bg-red-500 text-white rounded text-xs font-medium hover:bg-red-600"
+                            >
+                              Rechazar
+                            </button>
+                          </div>
+                        </td>
+                      )}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Cards Móvil */}
+          <div className="lg:hidden space-y-3">
             {acreditaciones.map((acreditacion) => {
               const montoNum = typeof acreditacion.monto === 'string' ? parseFloat(acreditacion.monto) : acreditacion.monto;
               return (
-                <tr key={acreditacion.id}>
-                  <td>{acreditacion.id}</td>
-                  <td>{acreditacion.usuario_email}</td>
-                  <td>{formatTarjeta(acreditacion.tarjeta)}</td>
-                  <td>{montoNum.toFixed(2)} CUP</td>
-                  <td>{acreditacion.sms_confirmacion}</td>
-                  <td>{acreditacion.id_transferencia}</td>
-                  <td>{new Date(acreditacion.fecha).toLocaleString()}</td>
+                <div key={acreditacion.id} className="bg-white p-4 rounded-xl shadow-sm space-y-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-semibold text-gray-900">#{acreditacion.id} - {acreditacion.usuario_email}</p>
+                      <p className="text-sm text-gray-500">{formatTarjeta(acreditacion.tarjeta_numero)}</p>
+                    </div>
+                    <span className="text-lg font-bold text-primary">{montoNum.toFixed(2)} CUP</span>
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    <p>ID Transferencia: {acreditacion.id_transferencia}</p>
+                    <p>{formatFecha(acreditacion.fecha)}</p>
+                  </div>
                   {filter === 'pendiente' && (
-                    <td>
-                      <button onClick={() => handleApprove(acreditacion.id)} className="btn-approve">
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleApprove(acreditacion.id)}
+                        className="flex-1 py-2 bg-green-500 text-white rounded-lg text-sm font-medium"
+                      >
                         Aprobar
                       </button>
-                      <button onClick={() => handleReject(acreditacion.id)} className="btn-reject">
+                      <button
+                        onClick={() => handleReject(acreditacion.id)}
+                        className="flex-1 py-2 bg-red-500 text-white rounded-lg text-sm font-medium"
+                      >
                         Rechazar
                       </button>
-                    </td>
+                    </div>
                   )}
-                </tr>
+                </div>
               );
             })}
-          </tbody>
-      </table>
+          </div>
+        </>
+      )}
     </div>
   );
 };

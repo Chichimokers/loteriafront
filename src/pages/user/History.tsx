@@ -1,16 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { apuestaService } from '../../services/api';
+import { apuestaService, lotteryService } from '../../services/api';
 import ResultadosHoy from './ResultadosHoy';
 
 interface Apuesta {
   id: number;
+  loteria: number;
   loteria_nombre: string;
+  modalidad: number;
   modalidad_nombre: string;
+  tirada: number;
   numeros: string[];
-  monto: number;
-  premio: number;
+  monto_total: string;
+  monto_por_numero: string;
+  premiagos: string | null;
+  premio_total: string;
+  paga: boolean;
   fecha: string;
-  resultado?: string;
+  resultado: { pick_3: string; pick_4: string } | null;
+  hora_tirada?: string;
 }
 
 const History: React.FC = () => {
@@ -25,7 +32,17 @@ const History: React.FC = () => {
     try {
       const data = await apuestaService.getApuestas();
       const apuestasArr = Array.isArray(data) ? data : (data as { results?: Apuesta[] }).results || [];
-      setApuestas(apuestasArr);
+      
+      const tiradasData = await lotteryService.getTiradasActivas();
+      const tiradasMap = new Map<number, string>();
+      tiradasData.forEach((t: { id: number; hora: string }) => tiradasMap.set(t.id, t.hora));
+      
+      const apuestasWithHora = apuestasArr.map((apuesta: Apuesta) => ({
+        ...apuesta,
+        hora_tirada: tiradasMap.get(apuesta.tirada) || undefined
+      }));
+      
+      setApuestas(apuestasWithHora);
     } catch (err) {
       console.error('Error loading apuestas:', err);
     } finally {
@@ -33,16 +50,17 @@ const History: React.FC = () => {
     }
   };
 
-  const getResultadoStyles = (resultado?: string) => {
-    if (resultado === 'ganador') return 'bg-success/10 text-success border-success/20';
-    if (resultado === 'perdedor') return 'bg-red-50 text-red-600 border-red-200';
-    return 'bg-yellow-50 text-yellow-700 border-yellow-200';
-  };
-
-  const getResultadoIcon = (resultado?: string) => {
-    if (resultado === 'ganador') return '🎉';
-    if (resultado === 'perdedor') return '😔';
-    return '⏳';
+  const getStatusInfo = (apuesta: Apuesta): { label: string; styles: string; icon: string } => {
+    if (apuesta.resultado === null && !apuesta.paga) {
+      return { label: 'Pendiente', styles: 'bg-yellow-50 text-yellow-700 border-yellow-200', icon: '⏳' };
+    }
+    if (apuesta.resultado !== null && !apuesta.paga) {
+      return { label: 'Perdido', styles: 'bg-red-50 text-red-600 border-red-200', icon: '😔' };
+    }
+    if (apuesta.paga) {
+      return { label: 'Ganado', styles: 'bg-success/10 text-success border-success/20', icon: '🎉' };
+    }
+    return { label: 'Pendiente', styles: 'bg-yellow-50 text-yellow-700 border-yellow-200', icon: '⏳' };
   };
 
   const getNum = (val: number | string | undefined | null): number => {
@@ -53,6 +71,11 @@ const History: React.FC = () => {
 
   const formatMonto = (val: number | string | undefined | null) => {
     return getNum(val).toFixed(2);
+  };
+
+  const formatFecha = (fecha: string) => {
+    const date = new Date(fecha);
+    return date.toLocaleDateString('es-ES');
   };
 
   if (loading) {
@@ -108,12 +131,22 @@ const History: React.FC = () => {
                   <div>
                     <span className="text-sm text-gray-500">Apuesta #{apuesta.id}</span>
                     <p className="text-xs text-gray-400">
-                      {new Date(apuesta.fecha).toLocaleString()}
+                      {formatFecha(apuesta.fecha)}
                     </p>
                   </div>
-                  <span className={`badge border ${getResultadoStyles(apuesta.resultado)}`}>
-                    {getResultadoIcon(apuesta.resultado)} {apuesta.resultado === 'ganador' ? 'Ganador' : apuesta.resultado === 'perdedor' ? 'Perdedor' : 'Pendiente'}
-                  </span>
+                  {apuesta.hora_tirada && (
+                    <div className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">
+                      ⏰ Tirada: {apuesta.hora_tirada.split(':').slice(0,2).join(':')}
+                    </div>
+                  )}
+                  {(() => {
+                    const status = getStatusInfo(apuesta);
+                    return (
+                      <span className={`badge border ${status.styles}`}>
+                        {status.icon} {status.label}
+                      </span>
+                    );
+                  })()}
                 </div>
 
                 {/* Details */}
@@ -128,15 +161,36 @@ const History: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-xs text-gray-500 mb-1">Monto Apostado</p>
-                    <p className="font-semibold text-gray-900">{formatMonto(apuesta.monto)} CUP</p>
+                    <p className="font-semibold text-gray-900">{formatMonto(apuesta.monto_total)} CUP</p>
                   </div>
                   <div>
                     <p className="text-xs text-gray-500 mb-1">Premio</p>
-                    <p className={`font-bold ${apuesta.premio > 0 ? 'text-success' : 'text-gray-900'}`}>
-                      {formatMonto(apuesta.premio)} CUP
+                    <p className={`font-bold ${getNum(apuesta.premio_total) > 0 ? 'text-success' : 'text-gray-900'}`}>
+                      {formatMonto(apuesta.premio_total)} CUP
                     </p>
                   </div>
                 </div>
+
+                {/* Results if available */}
+                {apuesta.resultado && (
+                  <div className="mb-4 p-3 bg-gray-50 rounded-xl">
+                    <p className="text-xs text-gray-500 mb-2">Resultados</p>
+                    <div className="flex gap-4">
+                      {apuesta.resultado.pick_3 && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-gray-500">Pick 3:</span>
+                          <span className="font-bold text-gray-900">{apuesta.resultado.pick_3}</span>
+                        </div>
+                      )}
+                      {apuesta.resultado.pick_4 && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-gray-500">Pick 4:</span>
+                          <span className="font-bold text-gray-900">{apuesta.resultado.pick_4}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 {/* Números */}
                 <div>

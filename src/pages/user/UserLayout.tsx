@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import './UserLayout.css';
 
 const UserLayout: React.FC = () => {
   const { user, logout } = useAuth();

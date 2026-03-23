@@ -28,6 +28,7 @@ const AdminLayout: React.FC = () => {
   const navItems = [
     { path: '/admin', label: 'Dashboard', icon: '📊' },
     { path: '/admin/usuarios', label: 'Usuarios', icon: '👥' },
+    { path: '/admin/apuestas', label: 'Apuestas', icon: '🎯' },
     { path: '/admin/acreditaciones', label: 'Acreditaciones', icon: '💰' },
     { path: '/admin/extracciones', label: 'Extracciones', icon: '💸' },
     { path: '/admin/loterias', label: 'Loterías', icon: '🎰' },

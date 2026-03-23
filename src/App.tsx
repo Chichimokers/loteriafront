@@ -19,6 +19,7 @@ import AdminLoterias from './pages/admin/AdminLoterias';
 import AdminTiradas from './pages/admin/AdminTiradas';
 import AdminResultados from './pages/admin/AdminResultados';
 import AdminModalidades from './pages/admin/AdminModalidades';
+import AdminApuestas from './pages/admin/AdminApuestas';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode; adminOnly?: boolean }> = ({ children, adminOnly }) => {
   const { user, loading } = useAuth();
@@ -62,6 +63,7 @@ const App: React.FC = () => {
       }>
         <Route index element={<AdminDashboard />} />
         <Route path="usuarios" element={<AdminUsers />} />
+        <Route path="apuestas" element={<AdminApuestas />} />
         <Route path="acreditaciones" element={<AdminAcreditaciones />} />
         <Route path="extracciones" element={<AdminExtracciones />} />
         <Route path="loterias" element={<AdminLoterias />} />
