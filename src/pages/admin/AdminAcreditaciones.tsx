@@ -126,6 +126,8 @@ const AdminAcreditaciones: React.FC = () => {
                   <th className="text-left p-4 text-sm font-semibold text-gray-600">Usuario</th>
                   <th className="text-left p-4 text-sm font-semibold text-gray-600">Tarjeta</th>
                   <th className="text-left p-4 text-sm font-semibold text-gray-600">Monto</th>
+                  <th className="text-left p-4 text-sm font-semibold text-gray-600">SMS</th>
+                  <th className="text-left p-4 text-sm font-semibold text-gray-600">ID Transferencia</th>
                   <th className="text-left p-4 text-sm font-semibold text-gray-600">Fecha</th>
                   {filter === 'pendiente' && <th className="text-left p-4 text-sm font-semibold text-gray-600">Acciones</th>}
                 </tr>
@@ -139,6 +141,8 @@ const AdminAcreditaciones: React.FC = () => {
                       <td className="p-4 text-sm text-gray-600">{acreditacion.usuario_email}</td>
                       <td className="p-4 text-sm text-gray-600 font-mono">{formatTarjeta(acreditacion.tarjeta_numero)}</td>
                       <td className="p-4 text-sm font-bold text-gray-900">{montoNum.toFixed(2)} CUP</td>
+                      <td className="p-4 text-sm text-gray-600 max-w-[200px] truncate">{acreditacion.sms_confirmacion || '-'}</td>
+                      <td className="p-4 text-sm text-gray-600 font-mono">{acreditacion.id_transferencia || '-'}</td>
                       <td className="p-4 text-sm text-gray-600">{formatFecha(acreditacion.fecha)}</td>
                       {filter === 'pendiente' && (
                         <td className="p-4">
@@ -179,7 +183,8 @@ const AdminAcreditaciones: React.FC = () => {
                     <span className="text-lg font-bold text-indigo-500">{montoNum.toFixed(2)} CUP</span>
                   </div>
                   <div className="text-sm text-gray-500">
-                    <p>ID Transferencia: {acreditacion.id_transferencia}</p>
+                    <p>SMS: {acreditacion.sms_confirmacion || '-'}</p>
+                    <p>ID Transferencia: {acreditacion.id_transferencia || '-'}</p>
                     <p>{formatFecha(acreditacion.fecha)}</p>
                   </div>
                   {filter === 'pendiente' && (
