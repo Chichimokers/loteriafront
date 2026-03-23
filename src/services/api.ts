@@ -92,6 +92,11 @@ export const lotteryService = {
     return response.data;
   },
   
+  getResultadosHoy: async () => {
+    const response = await api.get('/loterias/tiradas/resultados_hoy/');
+    return response.data;
+  },
+  
   getModalidades: async () => {
     const response = await api.get('/loterias/modalidades/');
     return response.data;
@@ -99,7 +104,7 @@ export const lotteryService = {
 };
 
 export const apuestaService = {
-  createApuesta: async (data: { loteria: number; modalidad: number; tirada: number; numeros: string[]; monto_por_numero: number }) => {
+  createApuesta: async (data: { tirada_id: number; modalidad_id: number; numeros: string[]; monto_por_numero: number }) => {
     const response = await api.post('/apuestas/', data);
     return response.data;
   },
@@ -177,7 +182,7 @@ export const tarjetaService = {
 
 export const resultadoService = {
   createResultado: async (data: { tirada_id: number; pick_3: string; pick_4: string }) => {
-    const response = await api.post('/loterias/tiradas/resultados/', data);
+    const response = await api.post('/loterias/tiradas/ingresar_resultado/', data);
     return response.data;
   },
 };

@@ -4,12 +4,10 @@ import './AdminResultados.css';
 
 interface Tirada {
   id: number;
-  loteria_nombre?: string;
+  loteria: number;
+  loteria_nombre: string;
   hora: string;
-  fecha: string;
   activa: boolean;
-  pick_3?: string;
-  pick_4?: string;
 }
 
 const AdminResultados: React.FC = () => {
@@ -80,7 +78,7 @@ const AdminResultados: React.FC = () => {
             <option value={0}>Seleccionar Tirada</option>
             {tiradas.map((tirada) => (
               <option key={tirada.id} value={tirada.id}>
-                {tirada.loteria_nombre} - {tirada.hora} - {tirada.fecha}
+                {tirada.loteria_nombre} - {tirada.hora}
               </option>
             ))}
           </select>

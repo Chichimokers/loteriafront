@@ -3,18 +3,11 @@ import { useAuth } from '../../context/AuthContext';
 import { lotteryService, apuestaService } from '../../services/api';
 import './Betting.css';
 
-interface Loteria {
-  id: number;
-  nombre: string;
-  foto: string;
-}
-
 interface Tirada {
   id: number;
   loteria: number;
-  loteria_nombre?: string;
+  loteria_nombre: string;
   hora: string;
-  fecha: string;
   activa: boolean;
 }
 
@@ -26,11 +19,9 @@ interface Modalidad {
 
 const Betting: React.FC = () => {
   const { user, refreshUser } = useAuth();
-  const [loterias, setLoterias] = useState<Loteria[]>([]);
   const [tiradas, setTiradas] = useState<Tirada[]>([]);
   const [modalidades, setModalidades] = useState<Modalidad[]>([]);
   
-  const [selectedLoteria, setSelectedLoteria] = useState<number | null>(null);
   const [selectedTirada, setSelectedTirada] = useState<number | null>(null);
   const [selectedModalidad, setSelectedModalidad] = useState<number | null>(null);
   
@@ -46,39 +37,18 @@ const Betting: React.FC = () => {
     loadData();
   }, []);
 
-  useEffect(() => {
-    if (selectedLoteria) {
-      loadTiradas();
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedLoteria]);
-
   const loadData = async () => {
     try {
-      const [loteriasData, tiradasData, modalidadesData] = await Promise.all([
-        lotteryService.getLoterias(),
+      const [tiradasData, modalidadesData] = await Promise.all([
         lotteryService.getTiradasActivas(),
         lotteryService.getModalidades(),
       ]);
-      const loteriasArr = Array.isArray(loteriasData) ? loteriasData : (loteriasData as { results?: Loteria[] }).results || [];
       const tiradasArr = Array.isArray(tiradasData) ? tiradasData : (tiradasData as { results?: Tirada[] }).results || [];
       const modalidadesArr = Array.isArray(modalidadesData) ? modalidadesData : (modalidadesData as { results?: Modalidad[] }).results || [];
-      setLoterias(loteriasArr);
       setTiradas(tiradasArr);
       setModalidades(modalidadesArr);
     } catch (err) {
       console.error('Error loading data:', err);
-    }
-  };
-
-  const loadTiradas = async () => {
-    try {
-      const data = await lotteryService.getTiradas();
-      const tiradasArr = Array.isArray(data) ? data : (data as { results?: Tirada[] }).results || [];
-      const filtradas = tiradasArr.filter((t: Tirada) => t.loteria === selectedLoteria && t.activa);
-      setTiradas(filtradas);
-    } catch (err) {
-      console.error('Error loading tiradas:', err);
     }
   };
 
@@ -113,7 +83,7 @@ const Betting: React.FC = () => {
     setError('');
     setMessage('');
 
-    if (!selectedLoteria || !selectedTirada || !selectedModalidad) {
+    if (!selectedTirada || !selectedModalidad) {
       setError('Por favor complete todos los campos');
       setLoading(false);
       return;
@@ -133,9 +103,8 @@ const Betting: React.FC = () => {
 
     try {
       await apuestaService.createApuesta({
-        loteria: selectedLoteria,
-        modalidad: selectedModalidad,
-        tirada: selectedTirada,
+        tirada_id: selectedTirada,
+        modalidad_id: selectedModalidad,
         numeros: numeros,
         monto_por_numero: montoPorNumero,
       });
@@ -143,7 +112,6 @@ const Betting: React.FC = () => {
       await refreshUser();
       setNumeros([]);
       setNumeroInput('');
-      setSelectedLoteria(null);
       setSelectedTirada(null);
       setSelectedModalidad(null);
     } catch (err: unknown) {
@@ -154,9 +122,9 @@ const Betting: React.FC = () => {
     }
   };
 
-  const filteredTiradas = selectedLoteria 
-    ? tiradas.filter((t) => t.loteria === selectedLoteria)
-    : [];
+  if (!user || typeof user.saldo_principal !== 'number') {
+    return <div>Cargando...</div>;
+  }
 
   return (
     <div className="betting-page">
@@ -168,36 +136,16 @@ const Betting: React.FC = () => {
       <form onSubmit={handleApostar} className="betting-form">
         <div className="form-row">
           <div className="form-group">
-            <label>Lotería</label>
-            <select
-              value={selectedLoteria || ''}
-              onChange={(e) => {
-                setSelectedLoteria(Number(e.target.value) || null);
-                setSelectedTirada(null);
-              }}
-              required
-            >
-              <option value="">Seleccionar Lotería</option>
-              {loterias.map((loteria) => (
-                <option key={loteria.id} value={loteria.id}>
-                  {loteria.nombre}
-                </option>
-              ))}
-            </select>
-          </div>
-          
-          <div className="form-group">
-            <label>Horario</label>
+            <label>Seleccionar Tirada</label>
             <select
               value={selectedTirada || ''}
               onChange={(e) => setSelectedTirada(Number(e.target.value) || null)}
-              disabled={!selectedLoteria}
               required
             >
               <option value="">Seleccionar Horario</option>
-              {filteredTiradas.map((tirada) => (
+              {tiradas.map((tirada) => (
                 <option key={tirada.id} value={tirada.id}>
-                  {tirada.hora} - {tirada.fecha}
+                  {tirada.loteria_nombre} - {tirada.hora}
                 </option>
               ))}
             </select>
@@ -260,7 +208,7 @@ const Betting: React.FC = () => {
           </div>
           <div className="monto-total">
             <p>Monto total: <strong>{montoTotal.toFixed(2)} CUP</strong></p>
-            <p className="saldo-actual">Saldo disponible: {user?.saldo_principal.toFixed(2)} CUP</p>
+            <p className="saldo-actual">Saldo disponible: {user.saldo_principal.toFixed(2)} CUP</p>
           </div>
         </div>
 

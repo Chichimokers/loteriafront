@@ -8,7 +8,6 @@ interface Tirada {
   loteria: number;
   loteria_nombre?: string;
   hora: string;
-  fecha: string;
   activa: boolean;
 }
 
@@ -20,7 +19,6 @@ const AdminTiradas: React.FC = () => {
   const [formData, setFormData] = useState({
     loteria_id: 0,
     hora: '',
-    fecha: '',
     activa: true,
   });
 
@@ -48,10 +46,10 @@ const AdminTiradas: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await api.post('/loterias/tiradas/', { loteria: formData.loteria_id, hora: formData.hora, fecha: formData.fecha, activa: formData.activa });
+      await api.post('/loterias/tiradas/', { loteria: formData.loteria_id, hora: formData.hora, activa: formData.activa });
       await loadData();
       setShowForm(false);
-      setFormData({ loteria_id: 0, hora: '', fecha: '', activa: true });
+      setFormData({ loteria_id: 0, hora: '', activa: true });
     } catch (err) {
       console.error('Error saving tirada:', err);
     }
@@ -106,12 +104,6 @@ const AdminTiradas: React.FC = () => {
             onChange={(e) => setFormData({ ...formData, hora: e.target.value })}
             required
           />
-          <input
-            type="date"
-            value={formData.fecha}
-            onChange={(e) => setFormData({ ...formData, fecha: e.target.value })}
-            required
-          />
           <label>
             <input
               type="checkbox"
@@ -130,7 +122,6 @@ const AdminTiradas: React.FC = () => {
             <th>ID</th>
             <th>Lotería</th>
             <th>Hora</th>
-            <th>Fecha</th>
             <th>Estado</th>
             <th>Acciones</th>
           </tr>
@@ -141,7 +132,6 @@ const AdminTiradas: React.FC = () => {
               <td>{tirada.id}</td>
               <td>{tirada.loteria_nombre || tirada.loteria}</td>
               <td>{tirada.hora}</td>
-              <td>{tirada.fecha}</td>
               <td>{tirada.activa ? 'Activa' : 'Inactiva'}</td>
               <td>
                 <button onClick={() => handleToggleActiva(tirada)}>
