@@ -15,6 +15,15 @@ const Profile: React.FC = () => {
   const [error, setError] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    if (e.target.name === 'tarjeta_bancaria') {
+      const value = e.target.value.replace(/\D/g, '').slice(0, 14);
+      const match = value.match(/^(\d{0,3})(\d{0,3})(\d{0,3})(\d{0,4})$/);
+      if (match) {
+        const parts = [match[1], match[2], match[3], match[4]].filter(p => p);
+        setFormData({ ...formData, [e.target.name]: parts.join('-') });
+        return;
+      }
+    }
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -73,6 +82,7 @@ const Profile: React.FC = () => {
             name="tarjeta_bancaria"
             value={formData.tarjeta_bancaria}
             onChange={handleChange}
+            placeholder="xxx-xxx-xxx-xxxx"
             required
           />
         </div>

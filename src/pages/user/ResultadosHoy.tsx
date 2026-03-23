@@ -88,13 +88,17 @@ const ResultadosHoy: React.FC = () => {
     return value.split('');
   };
 
-  const renderBolas = (value: string | null, count: number) => {
+  const renderBolas = (value: string | null, count: number, isPrimary: boolean = false) => {
     const digits = splitDigits(value);
     const balls = [];
     for (let i = 0; i < count; i++) {
+      const hasValue = digits[i] && digits[i] !== '?';
       balls.push(
-        <div key={i} className={`bola ${i === 0 ? 'bola-primary' : 'bola-secondary'}`}>
-          {digits[i] || '?'}
+        <div 
+          key={i} 
+          className={`bola ${hasValue ? (isPrimary ? 'bola-primary' : 'bola-secondary') : 'bola-waiting'}`}
+        >
+          {hasValue ? digits[i] : '?'}
         </div>
       );
     }
@@ -152,14 +156,14 @@ const ResultadosHoy: React.FC = () => {
                       <div className="pick-group">
                         <span className="pick-label">Pick 3</span>
                         <div className="bolas-row">
-                          {renderBolas(tirada.resultado.pick_3, 3)}
+                          {renderBolas(tirada.resultado.pick_3, 3, true)}
                         </div>
                       </div>
                       
                       <div className="pick-group">
                         <span className="pick-label">Pick 4</span>
                         <div className="bolas-row">
-                          {renderBolas(tirada.resultado.pick_4, 4)}
+                          {renderBolas(tirada.resultado.pick_4, 4, false)}
                         </div>
                       </div>
                     </div>

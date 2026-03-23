@@ -10,8 +10,23 @@ interface Tirada {
   activa: boolean;
 }
 
+interface Resultado {
+  id: number;
+  tirada: number;
+  tirada_info?: {
+    loteria_nombre: string;
+    hora: string;
+  };
+  loteria_nombre?: string;
+  hora?: string;
+  pick_3: string;
+  pick_4: string;
+  fecha: string;
+}
+
 const AdminResultados: React.FC = () => {
   const [tiradas, setTiradas] = useState<Tirada[]>([]);
+  const [resultados, setResultados] = useState<Resultado[]>([]);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     tirada_id: 0,
@@ -22,16 +37,24 @@ const AdminResultados: React.FC = () => {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    loadTiradas();
+    loadData();
   }, []);
 
-  const loadTiradas = async () => {
+  const loadData = async () => {
+    setLoading(true);
     try {
-      const data = await lotteryService.getTiradasActivas();
-      const arr = Array.isArray(data) ? data : (data as { results?: Tirada[] }).results || [];
-      setTiradas(arr);
+      const [tiradasData, resultadosData] = await Promise.all([
+        lotteryService.getTiradasActivas(),
+        resultadoService.getResultados(),
+      ]);
+      
+      const tiradasArr = Array.isArray(tiradasData) ? tiradasData : (tiradasData as { results?: Tirada[] }).results || [];
+      setTiradas(tiradasArr);
+      
+      const resultadosArr = Array.isArray(resultadosData) ? resultadosData : (resultadosData as { results?: Resultado[] }).results || [];
+      setResultados(resultadosArr);
     } catch (err) {
-      console.error('Error loading tiradas:', err);
+      console.error('Error loading data:', err);
     } finally {
       setLoading(false);
     }
@@ -47,7 +70,7 @@ const AdminResultados: React.FC = () => {
       await resultadoService.createResultado(formData);
       setMessage('Resultados ingresados correctamente');
       setFormData({ tirada_id: 0, pick_3: '', pick_4: '' });
-      await loadTiradas();
+      await loadData();
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Error al ingresar resultados';
       setError(errorMessage);
@@ -56,7 +79,15 @@ const AdminResultados: React.FC = () => {
     }
   };
 
-  if (loading) {
+  const getLoteriaNombre = (resultado: Resultado) => {
+    return resultado.tirada_info?.loteria_nombre || resultado.loteria_nombre || '-';
+  };
+
+  const getHora = (resultado: Resultado) => {
+    return resultado.tirada_info?.hora || resultado.hora || '-';
+  };
+
+  if (loading && tiradas.length === 0) {
     return <div className="admin-resultados">Cargando...</div>;
   }
 
@@ -111,6 +142,51 @@ const AdminResultados: React.FC = () => {
           {loading ? 'Guardando...' : 'Guardar Resultados'}
         </button>
       </form>
+
+      <div className="historico-section">
+        <h3>Histórico de Resultados</h3>
+        
+        {resultados.length === 0 ? (
+          <p className="no-resultados">No hay resultados registrados</p>
+        ) : (
+          <table className="historico-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Lotería</th>
+                <th>Hora</th>
+                <th>Pick 3</th>
+                <th>Pick 4</th>
+                <th>Fecha</th>
+              </tr>
+            </thead>
+            <tbody>
+              {resultados.map((resultado) => (
+                <tr key={resultado.id}>
+                  <td>{resultado.id}</td>
+                  <td>{getLoteriaNombre(resultado)}</td>
+                  <td>{getHora(resultado)}</td>
+                  <td>
+                    <span className="pick-display pick-3">
+                      {resultado.pick_3.split('').map((d, i) => (
+                        <span key={i} className="digit">{d}</span>
+                      ))}
+                    </span>
+                  </td>
+                  <td>
+                    <span className="pick-display pick-4">
+                      {resultado.pick_4.split('').map((d, i) => (
+                        <span key={i} className="digit">{d}</span>
+                      ))}
+                    </span>
+                  </td>
+                  <td>{new Date(resultado.fecha).toLocaleString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
     </div>
   );
 };

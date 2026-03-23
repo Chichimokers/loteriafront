@@ -187,6 +187,11 @@ export const resultadoService = {
     const response = await api.post('/loterias/tiradas/ingresar_resultado/', data);
     return response.data;
   },
+  
+  getResultados: async () => {
+    const response = await api.get('/resultados/');
+    return response.data;
+  },
 };
 
 export const modalidadService = {

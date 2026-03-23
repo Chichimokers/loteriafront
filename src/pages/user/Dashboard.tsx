@@ -29,7 +29,7 @@ const Dashboard: React.FC = () => {
   });
 
   const [extraccionData, setExtraccionData] = useState({
-    monto: 0,
+    monto: '',
   });
 
   useEffect(() => {
@@ -78,18 +78,25 @@ const Dashboard: React.FC = () => {
     setError('');
     setMessage('');
 
-    if (extraccionData.monto > (user?.saldo_extraccion || 0)) {
+    const montoNum = Number(extraccionData.monto);
+    if (isNaN(montoNum) || montoNum <= 0) {
+      setError('Ingrese un monto válido');
+      setLoading(false);
+      return;
+    }
+
+    if (montoNum > (user?.saldo_extraccion || 0)) {
       setError('Saldo insuficiente');
       setLoading(false);
       return;
     }
 
     try {
-      await extraccionService.createExtraccion(extraccionData);
+      await extraccionService.createExtraccion({ monto: montoNum });
       setMessage('Solicitud de extracción enviada. Pendiente de aprobación.');
       await refreshUser();
       setShowExtraerModal(false);
-      setExtraccionData({ monto: 0 });
+      setExtraccionData({ monto: '' });
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Error al enviar solicitud';
       setError(errorMessage);
@@ -106,6 +113,14 @@ const Dashboard: React.FC = () => {
       'cuba': 'Banco de Cuba',
     };
     return bancos[banco] || banco;
+  };
+
+  const formatTarjeta = (numero: string) => {
+    const cleaned = numero.replace(/\D/g, '');
+    const match = cleaned.match(/^(\d{0,3})(\d{0,3})(\d{0,3})(\d{0,4})$/);
+    if (!match) return numero;
+    const parts = [match[1], match[2], match[3], match[4]].filter(p => p);
+    return parts.join('-');
   };
 
   if (!user || typeof user.saldo_principal !== 'number') {
@@ -154,7 +169,7 @@ const Dashboard: React.FC = () => {
                   <div className="tarjeta-banco">{getBancoLabel(tarjeta.banco)}</div>
                   {selectedCardId === tarjeta.id ? (
                     <div className="tarjeta-detalles">
-                      <div className="tarjeta-numero">📱 {tarjeta.numero}</div>
+                      <div className="tarjeta-numero">📱 {formatTarjeta(tarjeta.numero)}</div>
                       <div className="tarjeta-movil">📞 {tarjeta.movil}</div>
                     </div>
                   ) : (
@@ -220,7 +235,8 @@ const Dashboard: React.FC = () => {
                 <input
                   type="number"
                   value={extraccionData.monto}
-                  onChange={(e) => setExtraccionData({ monto: Number(e.target.value) })}
+                  onChange={(e) => setExtraccionData({ monto: e.target.value })}
+                  placeholder="0.00"
                   min="1"
                   max={user.saldo_extraccion}
                   required

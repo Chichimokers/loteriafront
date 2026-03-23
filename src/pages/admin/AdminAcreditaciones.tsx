@@ -54,6 +54,14 @@ const AdminAcreditaciones: React.FC = () => {
     }
   };
 
+  const formatTarjeta = (numero: string) => {
+    const cleaned = numero.replace(/\D/g, '');
+    const match = cleaned.match(/^(\d{0,3})(\d{0,3})(\d{0,3})(\d{0,4})$/);
+    if (!match) return numero;
+    const parts = [match[1], match[2], match[3], match[4]].filter(p => p);
+    return parts.join('-');
+  };
+
   if (loading) {
     return <div className="admin-acreditaciones">Cargando...</div>;
   }
@@ -94,7 +102,7 @@ const AdminAcreditaciones: React.FC = () => {
                 <tr key={acreditacion.id}>
                   <td>{acreditacion.id}</td>
                   <td>{acreditacion.usuario_email}</td>
-                  <td>{acreditacion.tarjeta}</td>
+                  <td>{formatTarjeta(acreditacion.tarjeta)}</td>
                   <td>{montoNum.toFixed(2)} CUP</td>
                   <td>{acreditacion.sms_confirmacion}</td>
                   <td>{acreditacion.id_transferencia}</td>
