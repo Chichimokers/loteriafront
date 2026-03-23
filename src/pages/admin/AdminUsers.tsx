@@ -89,7 +89,7 @@ const AdminUsers: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -120,7 +120,7 @@ const AdminUsers: React.FC = () => {
         </div>
         <div className="bg-white p-4 rounded-xl shadow-sm">
           <p className="text-sm text-gray-500">Saldo Total</p>
-          <p className="text-2xl font-bold text-primary">
+          <p className="text-2xl font-bold text-indigo-500">
             {usuarios.reduce((acc, u) => acc + (typeof u.saldo_principal === 'number' ? u.saldo_principal : parseFloat(u.saldo_principal) || 0), 0).toFixed(2)} CUP
           </p>
         </div>
@@ -175,12 +175,12 @@ const AdminUsers: React.FC = () => {
 
                 <div className="flex gap-2 pt-2 border-t">
                   {editingId === usuario.id ? (
-                    <button onClick={() => handleSave(usuario.id)} className="flex-1 py-2 bg-success text-white rounded-lg text-sm font-medium">
+                    <button onClick={() => handleSave(usuario.id)} className="flex-1 py-2 bg-green-500 text-white rounded-lg text-sm font-medium">
                       Guardar
                     </button>
                   ) : (
                     <>
-                      <button onClick={() => handleEdit(usuario)} className="flex-1 py-2 bg-primary text-white rounded-lg text-sm font-medium">
+                      <button onClick={() => handleEdit(usuario)} className="flex-1 py-2 bg-indigo-500 text-white rounded-lg text-sm font-medium">
                         Editar
                       </button>
                       <button onClick={() => handleToggleActive(usuario)} className={`flex-1 py-2 rounded-lg text-sm font-medium ${usuario.is_active ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
@@ -249,12 +249,12 @@ const AdminUsers: React.FC = () => {
                       </td>
                       <td className="p-4">
                         {editingId === usuario.id ? (
-                          <button onClick={() => handleSave(usuario.id)} className="text-success font-medium text-sm">
+                          <button onClick={() => handleSave(usuario.id)} className="text-green-500 font-medium text-sm">
                             Guardar
                           </button>
                         ) : (
                           <div className="flex gap-2">
-                            <button onClick={() => handleEdit(usuario)} className="text-primary font-medium text-sm">
+                            <button onClick={() => handleEdit(usuario)} className="text-indigo-500 font-medium text-sm">
                               Editar
                             </button>
                             <button onClick={() => handleToggleActive(usuario)} className="text-gray-500 hover:text-gray-700 text-sm">

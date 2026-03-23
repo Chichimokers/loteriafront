@@ -109,7 +109,7 @@ const AdminApuestas: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -166,7 +166,7 @@ const AdminApuestas: React.FC = () => {
               onClick={() => setFiltro(f.key as typeof filtro)}
               className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
                 filtro === f.key
-                  ? 'bg-primary text-white'
+                  ? 'bg-indigo-500 text-white'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { extraccionService, usuarioService } from '../../services/api';
 import { RefreshCw, BanknoteArrowDown } from 'lucide-react';
 
@@ -23,11 +23,7 @@ const AdminExtracciones: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'pendiente' | 'aprobada' | 'rechazada'>('pendiente');
 
-  useEffect(() => {
-    loadData();
-  }, [filter]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const [extraccionesData, usuariosData] = await Promise.all([
@@ -47,7 +43,11 @@ const AdminExtracciones: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filter]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleApprove = async (id: number) => {
     try {
@@ -84,7 +84,7 @@ const AdminExtracciones: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -110,7 +110,7 @@ const AdminExtracciones: React.FC = () => {
             onClick={() => setFilter(f.key as typeof filter)}
             className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
               filter === f.key
-                ? 'bg-primary text-white'
+                ? 'bg-indigo-500 text-white'
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
@@ -191,7 +191,7 @@ const AdminExtracciones: React.FC = () => {
                       <p className="font-semibold text-gray-900">#{extraccion.id} - {extraccion.usuario_email}</p>
                       <p className="text-sm text-gray-500">{extraccion.estado}</p>
                     </div>
-                    <span className="text-lg font-bold text-primary">{montoNum.toFixed(2)} CUP</span>
+                    <span className="text-lg font-bold text-indigo-500">{montoNum.toFixed(2)} CUP</span>
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     <div>

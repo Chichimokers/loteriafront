@@ -108,7 +108,7 @@ const AdminResultados: React.FC = () => {
   if (loading && tiradas.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -124,7 +124,7 @@ const AdminResultados: React.FC = () => {
       </div>
 
       {message && (
-        <div className="bg-success/10 text-success p-3 rounded-lg text-sm font-medium">
+        <div className="bg-green-500/10 text-green-500 p-3 rounded-lg text-sm font-medium">
           {message}
         </div>
       )}
@@ -165,7 +165,7 @@ const AdminResultados: React.FC = () => {
                   onClick={() => handleTiradaChange(tirada.id)}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                     formData.tirada_id === tirada.id
-                      ? 'bg-primary text-white'
+                      ? 'bg-indigo-500 text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
@@ -215,7 +215,7 @@ const AdminResultados: React.FC = () => {
         <button
           type="submit"
           disabled={loading || formData.tirada_id === 0}
-          className="w-full py-3 bg-primary text-white font-semibold rounded-lg disabled:opacity-50"
+          className="w-full py-3 bg-indigo-500 text-white font-semibold rounded-lg disabled:opacity-50"
         >
           {loading ? 'Guardando...' : 'Guardar Resultados'}
         </button>

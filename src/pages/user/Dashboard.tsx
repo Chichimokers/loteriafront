@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/auth-context';
 import { tarjetaService, acreditacionService, extraccionService } from '../../services/api';
 import { Wallet, CreditCard, Target, BarChart3, Dices, User, Smartphone, X, Phone } from 'lucide-react';
 
@@ -134,7 +134,7 @@ const Dashboard: React.FC = () => {
   if (!user || typeof user.saldo_principal !== 'number') {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -142,13 +142,13 @@ const Dashboard: React.FC = () => {
   return (
     <div className="p-4 space-y-4 max-w-md mx-auto">
       {message && (
-        <div className="bg-success/10 text-success p-3 rounded-lg text-sm font-medium">
+        <div className="bg-green-50 text-green-600 p-3 rounded-lg text-sm font-medium">
           {message}
         </div>
       )}
 
       {/* Saldo Principal */}
-      <div className="bg-gradient-to-br from-primary to-primary-600 rounded-2xl p-5 text-white">
+      <div className="bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-2xl p-5 text-white">
         <div className="flex items-center gap-2 mb-1">
           <Wallet className="w-5 h-5" />
           <span className="text-white/80 text-sm font-medium">Saldo Principal</span>
@@ -157,16 +157,15 @@ const Dashboard: React.FC = () => {
         <div className="flex gap-3">
           <button
             onClick={() => setShowAcreditarModal(true)}
-            className="flex-1 bg-white text-primary font-semibold py-3 px-4 rounded-xl"
+            className="flex-1 bg-white text-indigo-600 font-semibold py-3 px-4 rounded-xl hover:bg-indigo-50 transition-colors"
           >
             + Acreditar
           </button>
-     
         </div>
       </div>
 
       {/* Saldo Extracción */}
-      <div className="bg-gradient-to-br from-success to-success-600 rounded-2xl p-5 text-white">
+      <div className="bg-gradient-to-br from-green-500 to-green-700 rounded-2xl p-5 text-white">
         <div className="flex items-center gap-2 mb-1">
           <CreditCard className="w-5 h-5" />
           <span className="text-white/80 text-sm font-medium">Disponible para extraer</span>
@@ -174,7 +173,7 @@ const Dashboard: React.FC = () => {
         <div className="text-3xl font-bold mb-4">{user.saldo_extraccion.toFixed(2)} CUP</div>
         <button
           onClick={() => setShowExtraerModal(true)}
-          className="w-full bg-white text-success font-semibold py-3 px-4 rounded-xl"
+          className="w-full bg-white text-green-600 font-semibold py-3 px-4 rounded-xl hover:bg-green-50 transition-colors"
         >
           Extraer a mi cuenta
         </button>
@@ -182,19 +181,19 @@ const Dashboard: React.FC = () => {
 
       {/* Acciones Rápidas */}
       <div className="grid grid-cols-4 gap-3">
-        <a href="/apuestas" className="flex flex-col items-center gap-2 p-3 bg-white rounded-xl shadow-sm">
+        <a href="/apuestas" className="flex flex-col items-center gap-2 p-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow">
           <Target className="w-6 h-6 text-blue-500" />
           <span className="text-xs font-medium text-gray-700">Apostar</span>
         </a>
-        <a href="/historial" className="flex flex-col items-center gap-2 p-3 bg-white rounded-xl shadow-sm">
+        <a href="/historial" className="flex flex-col items-center gap-2 p-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow">
           <BarChart3 className="w-6 h-6 text-purple-500" />
           <span className="text-xs font-medium text-gray-700">Historial</span>
         </a>
-        <a href="/resultados" className="flex flex-col items-center gap-2 p-3 bg-white rounded-xl shadow-sm">
+        <a href="/resultados" className="flex flex-col items-center gap-2 p-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow">
           <Dices className="w-6 h-6 text-orange-500" />
           <span className="text-xs font-medium text-gray-700">Resultados</span>
         </a>
-        <a href="/perfil" className="flex flex-col items-center gap-2 p-3 bg-white rounded-xl shadow-sm">
+        <a href="/perfil" className="flex flex-col items-center gap-2 p-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow">
           <User className="w-6 h-6 text-green-500" />
           <span className="text-xs font-medium text-gray-700">Perfil</span>
         </a>
@@ -204,7 +203,7 @@ const Dashboard: React.FC = () => {
       {showAcreditarModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-end justify-center" onClick={() => setShowAcreditarModal(false)}>
           <div className="bg-white w-full max-w-md rounded-t-2xl max-h-[90vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex justify-between items-center p-4 border-b">
+            <div className="flex justify-between items-center p-4 border-b border-gray-200">
               <h3 className="text-lg font-bold text-gray-900">Acreditar Saldo</h3>
               <button onClick={() => setShowAcreditarModal(false)} className="text-gray-400 hover:text-gray-600">
                 <X className="w-5 h-5" />
@@ -212,15 +211,15 @@ const Dashboard: React.FC = () => {
             </div>
             <div className="p-4">
               {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-4">{error}</div>}
-              
+
               <p className="text-sm text-gray-500 mb-3">Selecciona una tarjeta</p>
-              
+
               <div className="space-y-2 mb-4">
                 {tarjetas.map((tarjeta) => (
                   <div
                     key={tarjeta.id}
                     className={`p-4 border-2 rounded-xl cursor-pointer transition-all ${
-                      selectedCardId === tarjeta.id ? 'border-primary bg-primary/5' : 'border-gray-200'
+                      selectedCardId === tarjeta.id ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:border-gray-300'
                     }`}
                     onClick={() => handleCardClick(tarjeta.id)}
                   >
@@ -245,16 +244,16 @@ const Dashboard: React.FC = () => {
                 <input
                   type="number"
                   placeholder="Monto (CUP)"
-                  value={acreditacionData.monto}
+                  value={acreditacionData.monto || ''}
                   onChange={(e) => setAcreditacionData({ ...acreditacionData, monto: Number(e.target.value) })}
-                  className="w-full p-3 border border-gray-300 rounded-xl"
+                  className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
                   required
                 />
                 <textarea
                   placeholder="SMS de confirmación"
                   value={acreditacionData.sms_confirmacion}
                   onChange={(e) => setAcreditacionData({ ...acreditacionData, sms_confirmacion: e.target.value })}
-                  className="w-full p-3 border border-gray-300 rounded-xl"
+                  className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
                   rows={2}
                   required
                 />
@@ -263,14 +262,14 @@ const Dashboard: React.FC = () => {
                   placeholder="ID de transferencia"
                   value={acreditacionData.id_transferencia}
                   onChange={(e) => setAcreditacionData({ ...acreditacionData, id_transferencia: e.target.value })}
-                  className="w-full p-3 border border-gray-300 rounded-xl"
+                  className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
                   required
                 />
                 <div className="flex gap-3 pt-2">
-                  <button type="button" onClick={() => setShowAcreditarModal(false)} className="flex-1 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl">
+                  <button type="button" onClick={() => setShowAcreditarModal(false)} className="flex-1 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors">
                     Cancelar
                   </button>
-                  <button type="submit" disabled={loading || !selectedCardId} className="flex-1 py-3 bg-primary text-white font-semibold rounded-xl disabled:opacity-50">
+                  <button type="submit" disabled={loading || !selectedCardId} className="flex-1 py-3 bg-indigo-500 text-white font-semibold rounded-xl hover:bg-indigo-600 transition-colors disabled:opacity-50">
                     {loading ? 'Enviando...' : 'Acreditar'}
                   </button>
                 </div>
@@ -284,20 +283,20 @@ const Dashboard: React.FC = () => {
       {showExtraerModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-end justify-center" onClick={() => setShowExtraerModal(false)}>
           <div className="bg-white w-full max-w-md rounded-t-2xl max-h-[90vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex justify-between items-center p-4 border-b">
+            <div className="flex justify-between items-center p-4 border-b border-gray-200">
               <h3 className="text-lg font-bold text-gray-900">Extraer Saldo</h3>
               <button onClick={() => setShowExtraerModal(false)} className="text-gray-400 hover:text-gray-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <div className="p-4">
-              <div className="bg-primary/10 p-4 rounded-xl flex justify-between items-center mb-4">
+              <div className="bg-indigo-50 p-4 rounded-xl flex justify-between items-center mb-4">
                 <span className="text-gray-600">Saldo disponible:</span>
-                <span className="text-xl font-bold text-primary">{user.saldo_principal.toFixed(2)} CUP</span>
+                <span className="text-xl font-bold text-indigo-600">{user.saldo_principal.toFixed(2)} CUP</span>
               </div>
-              
+
               {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-4">{error}</div>}
-              
+
               <form onSubmit={handleExtraer} className="space-y-3">
                 <input
                   type="number"
@@ -309,14 +308,14 @@ const Dashboard: React.FC = () => {
                       setExtraccionData({ monto: raw });
                     }
                   }}
-                  className="w-full p-3 border border-gray-300 rounded-xl"
+                  className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
                   required
                 />
                 <div className="flex gap-3 pt-2">
-                  <button type="button" onClick={() => setShowExtraerModal(false)} className="flex-1 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl">
+                  <button type="button" onClick={() => setShowExtraerModal(false)} className="flex-1 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors">
                     Cancelar
                   </button>
-                  <button type="submit" disabled={loading} className="flex-1 py-3 bg-success text-white font-semibold rounded-xl disabled:opacity-50">
+                  <button type="submit" disabled={loading} className="flex-1 py-3 bg-green-500 text-white font-semibold rounded-xl hover:bg-green-600 transition-colors disabled:opacity-50">
                     {loading ? 'Procesando...' : 'Extraer'}
                   </button>
                 </div>

@@ -35,10 +35,8 @@ const ResultadosHoy: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    let intervalId: ReturnType<typeof setInterval>;
-
     loadData();
-    intervalId = setInterval(() => loadData(true), 15000);
+    const intervalId = setInterval(() => loadData(true), 15000);
 
     return () => clearInterval(intervalId);
   }, []);

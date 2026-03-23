@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/auth-context';
 import { Sparkles, AlertCircle, UserPlus } from 'lucide-react';
 
 const Register: React.FC = () => {
@@ -58,11 +58,11 @@ const Register: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-secondary via-primary-700 to-primary p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-500 via-primary-700 to-indigo-500 p-4">
       {/* Decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -left-40 w-80 h-80 bg-white/10 rounded-full blur-3xl" />
-        <div className="absolute -bottom-40 -right-40 w-80 h-80 bg-primary/20 rounded-full blur-3xl" />
+        <div className="absolute -bottom-40 -right-40 w-80 h-80 bg-indigo-500/20 rounded-full blur-3xl" />
       </div>
 
       <div className="relative w-full max-w-md">
@@ -194,7 +194,7 @@ const Register: React.FC = () => {
 
           <p className="text-center mt-6 text-gray-600">
             ¿Ya tienes cuenta?{' '}
-            <Link to="/login" className="text-primary font-semibold hover:underline">
+            <Link to="/login" className="text-indigo-500 font-semibold hover:underline">
               Inicia Sesión
             </Link>
           </p>

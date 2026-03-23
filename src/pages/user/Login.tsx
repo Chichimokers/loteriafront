@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/auth-context';
 import { Sparkles, AlertCircle, ArrowRight } from 'lucide-react';
 
 const Login: React.FC = () => {
@@ -27,11 +27,11 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary via-primary-600 to-secondary p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 via-primary-600 to-purple-500 p-4">
       {/* Decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/10 rounded-full blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-secondary/20 rounded-full blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-100 rounded-full blur-3xl" />
       </div>
 
       <div className="relative w-full max-w-md">
@@ -100,7 +100,7 @@ const Login: React.FC = () => {
 
           <p className="text-center mt-6 text-gray-600">
             ¿No tienes cuenta?{' '}
-            <Link to="/register" className="text-primary font-semibold hover:underline">
+            <Link to="/register" className="text-indigo-500 font-semibold hover:underline">
               Regístrate
             </Link>
           </p>

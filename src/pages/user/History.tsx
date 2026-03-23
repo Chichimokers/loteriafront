@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { apuestaService, lotteryService } from '../../services/api';
 import ResultadosHoy from './ResultadosHoy';
 import { Dices, RefreshCw, Clock, Timer, Frown, PartyPopper } from 'lucide-react';
@@ -39,7 +39,7 @@ const History: React.FC = () => {
     }));
   };
 
-  const loadApuestas = async () => {
+  const loadApuestas = useCallback(async () => {
     try {
       const apuestasWithHora = await fetchApuestas();
       setApuestas(apuestasWithHora);
@@ -48,16 +48,14 @@ const History: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    let intervalId: ReturnType<typeof setInterval>;
-
     loadApuestas();
-    intervalId = setInterval(loadApuestas, 15000);
+    const intervalId = setInterval(loadApuestas, 15000);
 
     return () => clearInterval(intervalId);
-  }, []);
+  }, [loadApuestas]);
 
   const getStatusInfo = (apuesta: Apuesta): { label: string; styles: string; icon: React.ReactNode } => {
     if (apuesta.resultado === null && !apuesta.paga) {
@@ -67,7 +65,7 @@ const History: React.FC = () => {
       return { label: 'Perdido', styles: 'bg-red-50 text-red-600 border-red-200', icon: <Frown className="w-4 h-4" /> };
     }
     if (apuesta.paga) {
-      return { label: 'Ganado', styles: 'bg-success/10 text-success border-success/20', icon: <PartyPopper className="w-4 h-4" /> };
+      return { label: 'Ganado', styles: 'bg-green-500/10 text-green-500 border-success/20', icon: <PartyPopper className="w-4 h-4" /> };
     }
     return { label: 'Pendiente', styles: 'bg-yellow-50 text-yellow-700 border-yellow-200', icon: <Timer className="w-4 h-4" /> };
   };
@@ -90,7 +88,7 @@ const History: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -173,7 +171,7 @@ const History: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-xs text-gray-500 mb-1">Premio</p>
-                    <p className={`font-bold ${getNum(apuesta.premio_total) > 0 ? 'text-success' : 'text-gray-900'}`}>
+                    <p className={`font-bold ${getNum(apuesta.premio_total) > 0 ? 'text-green-500' : 'text-gray-900'}`}>
                       {formatMonto(apuesta.premio_total)} CUP
                     </p>
                   </div>

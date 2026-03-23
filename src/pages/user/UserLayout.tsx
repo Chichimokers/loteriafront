@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, Outlet } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/auth-context';
 import { Dices, Wallet, LogOut, Menu, X } from 'lucide-react';
 
 const UserLayout: React.FC = () => {
@@ -16,7 +16,7 @@ const UserLayout: React.FC = () => {
   if (!user || typeof user.saldo_principal !== 'number') {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -24,7 +24,7 @@ const UserLayout: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-gradient-to-r from-primary to-secondary text-white shadow-lg">
+      <header className="sticky top-0 z-40 bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}

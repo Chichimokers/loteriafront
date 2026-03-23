@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/auth-context';
 import { authService } from '../../services/api';
 import { CheckCircle2, AlertCircle, Check } from 'lucide-react';
 
@@ -47,7 +47,7 @@ const Profile: React.FC = () => {
   if (!user || typeof user.saldo_principal !== 'number') {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -74,7 +74,7 @@ const Profile: React.FC = () => {
       <div className="card">
         {/* Profile Header */}
         <div className="flex items-center gap-4 pb-6 mb-6 border-b border-gray-100">
-          <div className="w-20 h-20 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center text-white text-3xl font-bold shadow-lg">
+          <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-2xl flex items-center justify-center text-white text-3xl font-bold shadow-lg">
             {user.email.charAt(0).toUpperCase()}
           </div>
           <div>

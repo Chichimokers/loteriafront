@@ -85,7 +85,7 @@ const AdminLoterias: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -102,7 +102,7 @@ const AdminLoterias: React.FC = () => {
 
       <button
         onClick={() => setShowForm(!showForm)}
-        className="px-4 py-2 bg-primary text-white rounded-lg font-medium"
+        className="px-4 py-2 bg-indigo-500 text-white rounded-lg font-medium"
       >
         {showForm ? 'Cancelar' : '+ Nueva Lotería'}
       </button>
@@ -136,11 +136,11 @@ const AdminLoterias: React.FC = () => {
               id="activa"
               checked={formData.activa}
               onChange={(e) => setFormData({ ...formData, activa: e.target.checked })}
-              className="w-5 h-5 accent-primary"
+              className="w-5 h-5 accent-indigo-500"
             />
             <label htmlFor="activa" className="text-sm font-medium text-gray-700">Activa</label>
           </div>
-          <button type="submit" className="w-full py-2 bg-success text-white rounded-lg font-medium">
+          <button type="submit" className="w-full py-2 bg-green-500 text-white rounded-lg font-medium">
             Guardar
           </button>
         </form>

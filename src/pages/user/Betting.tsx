@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '../../context/auth-context';
 import { lotteryService, apuestaService } from '../../services/api';
 import { Wallet, CheckCircle2, AlertCircle, Dices, Plus, X } from 'lucide-react';
 
@@ -42,6 +42,17 @@ const Betting: React.FC = () => {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
+  const loadTiradasPorLoteria = useCallback(async () => {
+    try {
+      const data = await lotteryService.getTiradas();
+      const arr = Array.isArray(data) ? data : (data as { results?: Tirada[] }).results || [];
+      const filtradas = arr.filter((t: Tirada) => t.loteria === selectedLoteria && t.activa);
+      setTiradas(filtradas);
+    } catch (err) {
+      console.error('Error loading tiradas:', err);
+    }
+  }, [selectedLoteria]);
+
   useEffect(() => {
     loadLoterias();
     loadModalidades();
@@ -54,7 +65,7 @@ const Betting: React.FC = () => {
       setTiradas([]);
       setSelectedTirada(null);
     }
-  }, [selectedLoteria]);
+  }, [selectedLoteria, loadTiradasPorLoteria]);
 
   const loadLoterias = async () => {
     try {
@@ -74,17 +85,6 @@ const Betting: React.FC = () => {
       setModalidades(arr);
     } catch (err) {
       console.error('Error loading modalidades:', err);
-    }
-  };
-
-  const loadTiradasPorLoteria = async () => {
-    try {
-      const data = await lotteryService.getTiradas();
-      const arr = Array.isArray(data) ? data : (data as { results?: Tirada[] }).results || [];
-      const filtradas = arr.filter((t: Tirada) => t.loteria === selectedLoteria && t.activa);
-      setTiradas(filtradas);
-    } catch (err) {
-      console.error('Error loading tiradas:', err);
     }
   };
 
@@ -161,7 +161,7 @@ const Betting: React.FC = () => {
   if (!user || typeof user.saldo_principal !== 'number') {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -170,9 +170,9 @@ const Betting: React.FC = () => {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-900">Realizar Apuesta</h1>
-        <div className="bg-primary/10 px-4 py-2 rounded-full flex items-center gap-2">
-          <Wallet className="w-4 h-4 text-primary" />
-          <span className="text-sm font-medium text-primary">
+        <div className="bg-indigo-500/10 px-4 py-2 rounded-full flex items-center gap-2">
+          <Wallet className="w-4 h-4 text-indigo-500" />
+          <span className="text-sm font-medium text-indigo-500">
             Saldo: {user.saldo_principal.toFixed(2)} CUP
           </span>
         </div>
@@ -196,7 +196,7 @@ const Betting: React.FC = () => {
         {/* Step 1: Loterías */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold">1</div>
+            <div className="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center text-white font-bold">1</div>
             <h2 className="text-xl font-bold text-gray-900">Selecciona una Lotería</h2>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
@@ -207,8 +207,8 @@ const Betting: React.FC = () => {
                 className={`
                   relative p-4 rounded-2xl border-2 transition-all duration-200 text-center
                   ${selectedLoteria === loteria.id 
-                    ? 'border-primary bg-primary/5 shadow-lg scale-105' 
-                    : 'border-gray-200 hover:border-primary/50 hover:bg-gray-50'}
+                    ? 'border-indigo-500 bg-indigo-500/5 shadow-lg scale-105' 
+                    : 'border-gray-200 hover:border-indigo-500/50 hover:bg-gray-50'}
                 `}
               >
                 {loteria.foto ? (
@@ -218,13 +218,13 @@ const Betting: React.FC = () => {
                     className="w-16 h-16 rounded-xl object-cover mx-auto mb-2 shadow-md"
                   />
                 ) : (
-                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center mx-auto mb-2 text-white text-2xl font-bold shadow-md">
+                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center mx-auto mb-2 text-white text-2xl font-bold shadow-md">
                     {loteria.nombre.charAt(0)}
                   </div>
                 )}
                 <p className="font-semibold text-gray-900 text-sm">{loteria.nombre}</p>
                 {selectedLoteria === loteria.id && (
-                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-indigo-500 rounded-full flex items-center justify-center">
                     <CheckCircle2 className="w-4 h-4 text-white" />
                   </div>
                 )}
@@ -237,7 +237,7 @@ const Betting: React.FC = () => {
         {selectedLoteria && (
           <div className="mb-8 animate-fade-in">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold">2</div>
+              <div className="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center text-white font-bold">2</div>
               <h2 className="text-xl font-bold text-gray-900">Selecciona el Horario</h2>
             </div>
             <select
@@ -259,7 +259,7 @@ const Betting: React.FC = () => {
         {selectedTirada && (
           <div className="mb-8 animate-fade-in">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold">3</div>
+              <div className="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center text-white font-bold">3</div>
               <h2 className="text-xl font-bold text-gray-900">Selecciona la Modalidad</h2>
             </div>
             <select
@@ -281,7 +281,7 @@ const Betting: React.FC = () => {
         {selectedModalidad && (
           <div className="animate-fade-in">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold">4</div>
+              <div className="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center text-white font-bold">4</div>
               <h2 className="text-xl font-bold text-gray-900">Ingresa tus Números</h2>
             </div>
 

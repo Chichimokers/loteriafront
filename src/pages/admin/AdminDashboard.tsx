@@ -38,7 +38,7 @@ const AdminDashboard: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -55,12 +55,12 @@ const AdminDashboard: React.FC = () => {
 
       {/* KPIs principales */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="bg-gradient-to-br from-primary to-primary-600 p-5 rounded-xl text-white">
+        <div className="bg-gradient-to-br from-indigo-500 to-indigo-700 p-5 rounded-xl text-white">
           <p className="text-white/80 text-sm font-medium">Total Apostado</p>
           <p className="text-2xl font-bold mt-1">{getNum(metricas?.total_apostado).toFixed(2)}</p>
           <p className="text-xs text-white/60 mt-1">CUP</p>
         </div>
-        <div className="bg-gradient-to-br from-success to-success-600 p-5 rounded-xl text-white">
+        <div className="bg-gradient-to-br from-green-500 to-green-700 p-5 rounded-xl text-white">
           <p className="text-white/80 text-sm font-medium">Premios Pagados</p>
           <p className="text-2xl font-bold mt-1">{getNum(metricas?.total_premios_pagados).toFixed(2)}</p>
           <p className="text-xs text-white/60 mt-1">CUP</p>
@@ -92,7 +92,7 @@ const AdminDashboard: React.FC = () => {
             </div>
             <div className="flex items-center justify-between">
               <span className="text-gray-600 text-sm">Apuestas</span>
-              <span className="text-xl font-bold text-primary">{metricas.top_loteria.cantidad_apuestas}</span>
+              <span className="text-xl font-bold text-indigo-500">{metricas.top_loteria.cantidad_apuestas}</span>
             </div>
           </div>
         )}
@@ -110,7 +110,7 @@ const AdminDashboard: React.FC = () => {
             </div>
             <div className="flex items-center justify-between">
               <span className="text-gray-600 text-sm">Apuestas</span>
-              <span className="text-xl font-bold text-primary">{metricas.top_tirada.cantidad_apuestas}</span>
+              <span className="text-xl font-bold text-indigo-500">{metricas.top_tirada.cantidad_apuestas}</span>
             </div>
           </div>
         )}

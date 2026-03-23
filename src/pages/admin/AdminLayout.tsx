@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, Outlet, useLocation } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/auth-context';
 import { 
   Lock, 
   BarChart3, 
@@ -79,7 +79,7 @@ const AdminLayout: React.FC = () => {
         {/* Sidebar header */}
         <div className="h-16 flex items-center justify-between px-6 border-b border-gray-800">
           <Link to="/admin" className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center">
               <Settings className="w-5 h-5 text-white" />
             </div>
             <span className="text-lg font-bold">Admin</span>
@@ -101,7 +101,7 @@ const AdminLayout: React.FC = () => {
               className={`
                 flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
                 ${isActive(item.path) 
-                  ? 'bg-primary text-white shadow-lg shadow-primary/30' 
+                  ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/30' 
                   : 'text-gray-300 hover:bg-gray-800 hover:text-white'}
               `}
               onClick={() => setSidebarOpen(false)}

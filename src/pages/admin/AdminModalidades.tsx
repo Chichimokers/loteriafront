@@ -49,7 +49,7 @@ const AdminModalidades: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -98,7 +98,7 @@ const AdminModalidades: React.FC = () => {
                           className="w-24 p-2 border border-gray-200 rounded-lg"
                         />
                       ) : (
-                        <span className="font-bold text-primary">{modalidad.premio_por_peso}x</span>
+                        <span className="font-bold text-indigo-500">{modalidad.premio_por_peso}x</span>
                       )}
                     </td>
                     <td className="p-4">
@@ -112,7 +112,7 @@ const AdminModalidades: React.FC = () => {
                       ) : (
                         <button
                           onClick={() => handleEdit(modalidad)}
-                          className="px-3 py-1 bg-primary text-white rounded text-xs font-medium"
+                          className="px-3 py-1 bg-indigo-500 text-white rounded text-xs font-medium"
                         >
                           Editar
                         </button>
@@ -146,7 +146,7 @@ const AdminModalidades: React.FC = () => {
                         className="w-20 p-1 border border-gray-200 rounded text-lg font-bold"
                       />
                     ) : (
-                      <p className="text-lg font-bold text-primary">{modalidad.premio_por_peso}x</p>
+                      <p className="text-lg font-bold text-indigo-500">{modalidad.premio_por_peso}x</p>
                     )}
                   </div>
                   {editingId === modalidad.id ? (
@@ -159,7 +159,7 @@ const AdminModalidades: React.FC = () => {
                   ) : (
                     <button
                       onClick={() => handleEdit(modalidad)}
-                      className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium"
+                      className="px-4 py-2 bg-indigo-500 text-white rounded-lg text-sm font-medium"
                     >
                       Editar
                     </button>
