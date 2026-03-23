@@ -37,7 +37,8 @@ const Dashboard: React.FC = () => {
   const loadTarjetas = async () => {
     try {
       const data = await tarjetaService.getTarjetas();
-      const activas = (data as Tarjeta[]).filter((t: Tarjeta) => t.activa);
+      const cards = Array.isArray(data) ? data : (data as { results?: Tarjeta[] }).results || [];
+      const activas = cards.filter((t: Tarjeta) => t.activa);
       setTarjetas(activas);
     } catch (err) {
       console.error('Error loading tarjetas:', err);

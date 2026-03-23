@@ -30,7 +30,8 @@ const AdminResultados: React.FC = () => {
   const loadTiradas = async () => {
     try {
       const data = await lotteryService.getTiradasActivas();
-      setTiradas(data as Tirada[]);
+      const arr = Array.isArray(data) ? data : (data as { results?: Tirada[] }).results || [];
+      setTiradas(arr);
     } catch (err) {
       console.error('Error loading tiradas:', err);
     } finally {

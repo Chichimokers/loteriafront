@@ -23,7 +23,8 @@ const AdminExtracciones: React.FC = () => {
   const loadExtracciones = async () => {
     try {
       const data = await extraccionService.getExtracciones(filter);
-      setExtracciones(data as Extraccion[]);
+      const arr = Array.isArray(data) ? data : (data as { results?: Extraccion[] }).results || [];
+      setExtracciones(arr);
     } catch (err) {
       console.error('Error loading extracciones:', err);
     } finally {

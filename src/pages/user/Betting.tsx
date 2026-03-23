@@ -60,9 +60,12 @@ const Betting: React.FC = () => {
         lotteryService.getTiradasActivas(),
         lotteryService.getModalidades(),
       ]);
-      setLoterias(loteriasData as Loteria[]);
-      setTiradas(tiradasData as Tirada[]);
-      setModalidades(modalidadesData as Modalidad[]);
+      const loteriasArr = Array.isArray(loteriasData) ? loteriasData : (loteriasData as { results?: Loteria[] }).results || [];
+      const tiradasArr = Array.isArray(tiradasData) ? tiradasData : (tiradasData as { results?: Tirada[] }).results || [];
+      const modalidadesArr = Array.isArray(modalidadesData) ? modalidadesData : (modalidadesData as { results?: Modalidad[] }).results || [];
+      setLoterias(loteriasArr);
+      setTiradas(tiradasArr);
+      setModalidades(modalidadesArr);
     } catch (err) {
       console.error('Error loading data:', err);
     }
@@ -71,7 +74,8 @@ const Betting: React.FC = () => {
   const loadTiradas = async () => {
     try {
       const data = await lotteryService.getTiradas();
-      const filtradas = (data as Tirada[]).filter((t: Tirada) => t.loteria === selectedLoteria && t.activa);
+      const tiradasArr = Array.isArray(data) ? data : (data as { results?: Tirada[] }).results || [];
+      const filtradas = tiradasArr.filter((t: Tirada) => t.loteria === selectedLoteria && t.activa);
       setTiradas(filtradas);
     } catch (err) {
       console.error('Error loading tiradas:', err);

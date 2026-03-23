@@ -26,7 +26,8 @@ const AdminAcreditaciones: React.FC = () => {
   const loadAcreditaciones = async () => {
     try {
       const data = await acreditacionService.getAcreditaciones(filter);
-      setAcreditaciones(data as Acreditacion[]);
+      const arr = Array.isArray(data) ? data : (data as { results?: Acreditacion[] }).results || [];
+      setAcreditaciones(arr);
     } catch (err) {
       console.error('Error loading acreditaciones:', err);
     } finally {

@@ -23,7 +23,8 @@ const AdminLoterias: React.FC = () => {
   const loadLoterias = async () => {
     try {
       const data = await lotteryService.getLoterias();
-      setLoterias(data as Loteria[]);
+      const arr = Array.isArray(data) ? data : (data as { results?: Loteria[] }).results || [];
+      setLoterias(arr);
     } catch (err) {
       console.error('Error loading loterias:', err);
     } finally {

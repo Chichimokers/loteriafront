@@ -26,7 +26,8 @@ const AdminUsers: React.FC = () => {
   const loadUsuarios = async () => {
     try {
       const data = await usuarioService.getUsuarios();
-      setUsuarios(data as Usuario[]);
+      const usuariosArr = Array.isArray(data) ? data : (data as { results?: Usuario[] }).results || [];
+      setUsuarios(usuariosArr);
     } catch (err) {
       console.error('Error loading usuarios:', err);
     } finally {

@@ -24,7 +24,8 @@ const History: React.FC = () => {
   const loadApuestas = async () => {
     try {
       const data = await apuestaService.getApuestas();
-      setApuestas(data as Apuesta[]);
+      const apuestasArr = Array.isArray(data) ? data : (data as { results?: Apuesta[] }).results || [];
+      setApuestas(apuestasArr);
     } catch (err) {
       console.error('Error loading apuestas:', err);
     } finally {

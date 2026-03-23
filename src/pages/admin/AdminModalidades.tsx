@@ -22,7 +22,8 @@ const AdminModalidades: React.FC = () => {
   const loadModalidades = async () => {
     try {
       const data = await lotteryService.getModalidades();
-      setModalidades(data as Modalidad[]);
+      const arr = Array.isArray(data) ? data : (data as { results?: Modalidad[] }).results || [];
+      setModalidades(arr);
     } catch (err) {
       console.error('Error loading modalidades:', err);
     } finally {
