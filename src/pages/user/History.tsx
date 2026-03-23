@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { apuestaService } from '../../services/api';
+import ResultadosHoy from './ResultadosHoy';
 import './History.css';
 
 interface Apuesta {
@@ -39,6 +40,16 @@ const History: React.FC = () => {
     return 'resultado-pendiente';
   };
 
+  const getNum = (val: number | string | undefined | null): number => {
+    if (val === undefined || val === null) return 0;
+    if (typeof val === 'string') return parseFloat(val) || 0;
+    return val;
+  };
+
+  const formatMonto = (val: number | string | undefined | null) => {
+    return getNum(val).toFixed(2);
+  };
+
   const getResultadoText = (resultado?: string) => {
     if (resultado === 'ganador') return '✓ Ganador';
     if (resultado === 'perdedor') return '✗ Perdedor';
@@ -51,6 +62,8 @@ const History: React.FC = () => {
 
   return (
     <div className="history-page">
+      <ResultadosHoy />
+      
       <h2>Mis Apuestas</h2>
       
       {apuestas.length === 0 ? (
@@ -69,8 +82,8 @@ const History: React.FC = () => {
                 <p><strong>Lotería:</strong> {apuesta.loteria_nombre}</p>
                 <p><strong>Modalidad:</strong> {apuesta.modalidad_nombre}</p>
                 <p><strong>Números:</strong> {apuesta.numeros.join(', ')}</p>
-                <p><strong>Monto:</strong> {apuesta.monto.toFixed(2)} CUP</p>
-                <p><strong>Premio:</strong> {apuesta.premio.toFixed(2)} CUP</p>
+                <p><strong>Monto:</strong> {formatMonto(apuesta.monto)} CUP</p>
+                <p><strong>Premio:</strong> {formatMonto(apuesta.premio)} CUP</p>
                 <p><strong>Fecha:</strong> {new Date(apuesta.fecha).toLocaleString()}</p>
               </div>
             </div>

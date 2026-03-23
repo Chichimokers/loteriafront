@@ -1,0 +1,204 @@
+.resultados-hoy {
+  margin-bottom: 32px;
+}
+
+.resultados-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px 24px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.resultados-header h2 {
+  color: white;
+  margin: 0;
+  font-size: 24px;
+}
+
+.btn-refresh {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.btn-refresh:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.loading-state {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-size: 16px;
+}
+
+.no-resultados {
+  text-align: center;
+  padding: 60px 24px;
+  background: #f8f9fa;
+  border-radius: 12px;
+}
+
+.no-resultados-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.no-resultados p {
+  color: #666;
+  font-size: 16px;
+  margin: 0;
+}
+
+.loterias-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+.loteria-resultado-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.loteria-header {
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+  padding: 20px;
+  text-align: center;
+  border-bottom: 1px solid #eee;
+}
+
+.loteria-foto {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 12px;
+  border: 3px solid white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.loteria-foto-placeholder {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #1a73e8;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: bold;
+  margin: 0 auto 12px;
+  border: 3px solid white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.loteria-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 18px;
+}
+
+.tiradas-list {
+  padding: 16px;
+}
+
+.tirada-resultado {
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.tirada-resultado:last-child {
+  margin-bottom: 0;
+}
+
+.tirada-hora {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.picks-container {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+.pick-group {
+  text-align: center;
+}
+
+.pick-label {
+  display: block;
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.bolas-row {
+  display: flex;
+  gap: 6px;
+}
+
+.bola {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 16px;
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.bola-primary {
+  background: linear-gradient(135deg, #f5af19 0%, #f12711 100%);
+}
+
+.bola-secondary {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+}
+
+.error-message {
+  background: #fee;
+  color: #c33;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 480px) {
+  .resultados-header {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+
+  .loterias-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .bola {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+}
