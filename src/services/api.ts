@@ -189,7 +189,7 @@ export const resultadoService = {
   },
   
   getResultados: async () => {
-    const response = await api.get('/resultados/');
+    const response = await api.get('/loterias/resultados/');
     return response.data;
   },
 };

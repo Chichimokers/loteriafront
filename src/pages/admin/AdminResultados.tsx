@@ -168,14 +168,14 @@ const AdminResultados: React.FC = () => {
                   <td>{getHora(resultado)}</td>
                   <td>
                     <span className="pick-display pick-3">
-                      {resultado.pick_3.split('').map((d, i) => (
+                      {(resultado.pick_3 || '').split('').map((d, i) => (
                         <span key={i} className="digit">{d}</span>
                       ))}
                     </span>
                   </td>
                   <td>
                     <span className="pick-display pick-4">
-                      {resultado.pick_4.split('').map((d, i) => (
+                      {(resultado.pick_4 || '').split('').map((d, i) => (
                         <span key={i} className="digit">{d}</span>
                       ))}
                     </span>
