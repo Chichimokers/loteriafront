@@ -57,3 +57,58 @@
   margin-bottom: 16px;
   color: #666;
 }
+
+.modal-subtitle {
+  color: #666;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.tarjetas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.tarjeta-card {
+  background: #f8f9fa;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.tarjeta-card:hover {
+  border-color: #1a73e8;
+}
+
+.tarjeta-card.selected {
+  border-color: #1a73e8;
+  background: #e8f0fe;
+}
+
+.tarjeta-banco {
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+}
+
+.tarjeta-tap {
+  font-size: 12px;
+  color: #666;
+  margin-top: 8px;
+}
+
+.tarjeta-detalles {
+  margin-top: 12px;
+}
+
+.tarjeta-numero,
+.tarjeta-movil {
+  font-size: 13px;
+  color: #1a73e8;
+  margin-top: 4px;
+}

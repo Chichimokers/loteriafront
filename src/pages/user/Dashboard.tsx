@@ -6,6 +6,7 @@ import './Dashboard.css';
 interface Tarjeta {
   id: number;
   numero: string;
+  movil: string;
   banco: string;
   activa: boolean;
 }
@@ -18,6 +19,7 @@ const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
 
   const [acreditacionData, setAcreditacionData] = useState({
     tarjeta: 0,
@@ -45,6 +47,11 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  const handleCardClick = (cardId: number) => {
+    setSelectedCardId(selectedCardId === cardId ? null : cardId);
+    setAcreditacionData({ ...acreditacionData, tarjeta: cardId });
+  };
+
   const handleAcreditar = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -56,6 +63,7 @@ const Dashboard: React.FC = () => {
       setMessage('Solicitud de acreditación enviada. Pendiente de aprobación.');
       setShowAcreditarModal(false);
       setAcreditacionData({ tarjeta: 0, monto: 0, sms_confirmacion: '', id_transferencia: '' });
+      setSelectedCardId(null);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Error al enviar solicitud';
       setError(errorMessage);
@@ -88,6 +96,16 @@ const Dashboard: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const getBancoLabel = (banco: string) => {
+    const bancos: Record<string, string> = {
+      'metropolitano': 'Metropolitano',
+      'bandec': 'Bandec',
+      'bpa': 'BPA',
+      'cuba': 'Banco de Cuba',
+    };
+    return bancos[banco] || banco;
   };
 
   if (!user || typeof user.saldo_principal !== 'number') {
@@ -123,23 +141,30 @@ const Dashboard: React.FC = () => {
         <div className="modal-overlay">
           <div className="modal">
             <h3>Acreditar Saldo</h3>
+            <p className="modal-subtitle">Selecciona una tarjeta para ver los datos de envío</p>
             {error && <div className="error-message">{error}</div>}
-            <form onSubmit={handleAcreditar}>
-              <div className="form-group">
-                <label>Tarjeta</label>
-                <select
-                  value={acreditacionData.tarjeta}
-                  onChange={(e) => setAcreditacionData({ ...acreditacionData, tarjeta: Number(e.target.value) })}
-                  required
+            
+            <div className="tarjetas-grid">
+              {tarjetas.map((tarjeta) => (
+                <div
+                  key={tarjeta.id}
+                  className={`tarjeta-card ${selectedCardId === tarjeta.id ? 'selected' : ''}`}
+                  onClick={() => handleCardClick(tarjeta.id)}
                 >
-                  <option value={0}>Seleccionar tarjeta</option>
-                  {tarjetas.map((tarjeta) => (
-                    <option key={tarjeta.id} value={tarjeta.id}>
-                      ****{tarjeta.numero.slice(-4)} - {tarjeta.banco}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                  <div className="tarjeta-banco">{getBancoLabel(tarjeta.banco)}</div>
+                  {selectedCardId === tarjeta.id ? (
+                    <div className="tarjeta-detalles">
+                      <div className="tarjeta-numero">📱 {tarjeta.numero}</div>
+                      <div className="tarjeta-movil">📞 {tarjeta.movil}</div>
+                    </div>
+                  ) : (
+                    <div className="tarjeta-tap">Toca para ver datos</div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <form onSubmit={handleAcreditar}>
               <div className="form-group">
                 <label>Monto</label>
                 <input
@@ -171,10 +196,10 @@ const Dashboard: React.FC = () => {
                 />
               </div>
               <div className="modal-actions">
-                <button type="button" onClick={() => setShowAcreditarModal(false)} className="btn-cancel">
+                <button type="button" onClick={() => { setShowAcreditarModal(false); setSelectedCardId(null); }} className="btn-cancel">
                   Cancelar
                 </button>
-                <button type="submit" disabled={loading} className="btn-submit">
+                <button type="submit" disabled={loading || !selectedCardId} className="btn-submit">
                   {loading ? 'Enviando...' : 'Acreditar'}
                 </button>
               </div>
