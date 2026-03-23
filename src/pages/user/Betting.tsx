@@ -3,6 +3,13 @@ import { useAuth } from '../../context/AuthContext';
 import { lotteryService, apuestaService } from '../../services/api';
 import './Betting.css';
 
+interface Loteria {
+  id: number;
+  nombre: string;
+  foto: string;
+  activa: boolean;
+}
+
 interface Tirada {
   id: number;
   loteria: number;
@@ -19,9 +26,11 @@ interface Modalidad {
 
 const Betting: React.FC = () => {
   const { user, refreshUser } = useAuth();
+  const [loterias, setLoterias] = useState<Loteria[]>([]);
   const [tiradas, setTiradas] = useState<Tirada[]>([]);
   const [modalidades, setModalidades] = useState<Modalidad[]>([]);
   
+  const [selectedLoteria, setSelectedLoteria] = useState<number | null>(null);
   const [selectedTirada, setSelectedTirada] = useState<number | null>(null);
   const [selectedModalidad, setSelectedModalidad] = useState<number | null>(null);
   
@@ -34,21 +43,48 @@ const Betting: React.FC = () => {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    loadData();
+    loadLoterias();
+    loadModalidades();
   }, []);
 
-  const loadData = async () => {
+  useEffect(() => {
+    if (selectedLoteria) {
+      loadTiradasPorLoteria();
+    } else {
+      setTiradas([]);
+      setSelectedTirada(null);
+    }
+  }, [selectedLoteria]);
+
+  const loadLoterias = async () => {
     try {
-      const [tiradasData, modalidadesData] = await Promise.all([
-        lotteryService.getTiradasActivas(),
-        lotteryService.getModalidades(),
-      ]);
-      const tiradasArr = Array.isArray(tiradasData) ? tiradasData : (tiradasData as { results?: Tirada[] }).results || [];
-      const modalidadesArr = Array.isArray(modalidadesData) ? modalidadesData : (modalidadesData as { results?: Modalidad[] }).results || [];
-      setTiradas(tiradasArr);
-      setModalidades(modalidadesArr);
+      const data = await lotteryService.getLoterias();
+      const arr = Array.isArray(data) ? data : (data as { results?: Loteria[] }).results || [];
+      const activas = arr.filter((l: Loteria) => l.activa);
+      setLoterias(activas);
     } catch (err) {
-      console.error('Error loading data:', err);
+      console.error('Error loading loterias:', err);
+    }
+  };
+
+  const loadModalidades = async () => {
+    try {
+      const data = await lotteryService.getModalidades();
+      const arr = Array.isArray(data) ? data : (data as { results?: Modalidad[] }).results || [];
+      setModalidades(arr);
+    } catch (err) {
+      console.error('Error loading modalidades:', err);
+    }
+  };
+
+  const loadTiradasPorLoteria = async () => {
+    try {
+      const data = await lotteryService.getTiradas();
+      const arr = Array.isArray(data) ? data : (data as { results?: Tirada[] }).results || [];
+      const filtradas = arr.filter((t: Tirada) => t.loteria === selectedLoteria && t.activa);
+      setTiradas(filtradas);
+    } catch (err) {
+      console.error('Error loading tiradas:', err);
     }
   };
 
@@ -134,87 +170,117 @@ const Betting: React.FC = () => {
       {error && <div className="error-message">{error}</div>}
       
       <form onSubmit={handleApostar} className="betting-form">
-        <div className="form-row">
-          <div className="form-group">
-            <label>Seleccionar Tirada</label>
-            <select
-              value={selectedTirada || ''}
-              onChange={(e) => setSelectedTirada(Number(e.target.value) || null)}
-              required
-            >
-              <option value="">Seleccionar Horario</option>
-              {tiradas.map((tirada) => (
-                <option key={tirada.id} value={tirada.id}>
-                  {tirada.loteria_nombre} - {tirada.hora}
-                </option>
-              ))}
-            </select>
-          </div>
-          
-          <div className="form-group">
-            <label>Modalidad</label>
-            <select
-              value={selectedModalidad || ''}
-              onChange={(e) => setSelectedModalidad(Number(e.target.value) || null)}
-              required
-            >
-              <option value="">Seleccionar Modalidad</option>
-              {modalidades.map((modalidad) => (
-                <option key={modalidad.id} value={modalidad.id}>
-                  {modalidad.nombre} (Premio: {modalidad.premio_por_peso}x)
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <div className="numeros-section">
-          <h3>Ingrese sus números (3 dígitos cada uno)</h3>
-          <div className="numeros-input">
-            <input
-              type="text"
-              value={numeroInput}
-              onChange={(e) => setNumeroInput(e.target.value.replace(/\D/g, '').slice(0, 3))}
-              placeholder="123"
-              maxLength={3}
-            />
-            <button type="button" onClick={agregarNumero} className="btn-agregar">
-              Agregar
-            </button>
-          </div>
-          
-          <div className="numeros-list">
-            {numeros.map((num) => (
-              <div key={num} className="numero-card">
-                <span>{num}</span>
-                <button type="button" onClick={() => eliminarNumero(num)} className="btn-eliminar">
-                  ×
-                </button>
+        <div className="selection-step">
+          <h3>1. Selecciona una Lotería</h3>
+          <div className="loterias-grid">
+            {loterias.map((loteria) => (
+              <div
+                key={loteria.id}
+                className={`loteria-option ${selectedLoteria === loteria.id ? 'selected' : ''}`}
+                onClick={() => setSelectedLoteria(loteria.id)}
+              >
+                {loteria.foto ? (
+                  <img src={loteria.foto} alt={loteria.nombre} />
+                ) : (
+                  <div className="loteria-placeholder">{loteria.nombre.charAt(0)}</div>
+                )}
+                <span>{loteria.nombre}</span>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="monto-section">
-          <div className="form-group">
-            <label>Monto por número</label>
-            <input
-              type="number"
-              value={montoPorNumero}
-              onChange={(e) => setMontoPorNumero(Number(e.target.value))}
-              min="1"
-              required
-            />
+        {selectedLoteria && (
+          <div className="selection-step">
+            <h3>2. Selecciona el Horario</h3>
+            <div className="form-group">
+              <select
+                value={selectedTirada || ''}
+                onChange={(e) => setSelectedTirada(Number(e.target.value) || null)}
+                required
+              >
+                <option value="">Seleccionar Horario</option>
+                {tiradas.map((tirada) => (
+                  <option key={tirada.id} value={tirada.id}>
+                    {tirada.hora}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
-          <div className="monto-total">
-            <p>Monto total: <strong>{montoTotal.toFixed(2)} CUP</strong></p>
-            <p className="saldo-actual">Saldo disponible: {user.saldo_principal.toFixed(2)} CUP</p>
-          </div>
-        </div>
+        )}
 
-        <button type="submit" disabled={loading || numeros.length === 0} className="btn-apostar">
-          {loading ? 'Procesando...' : `APOSTAR ${montoTotal.toFixed(2)} CUP`}
-        </button>
+        {selectedTirada && (
+          <div className="selection-step">
+            <h3>3. Selecciona la Modalidad</h3>
+            <div className="form-group">
+              <select
+                value={selectedModalidad || ''}
+                onChange={(e) => setSelectedModalidad(Number(e.target.value) || null)}
+                required
+              >
+                <option value="">Seleccionar Modalidad</option>
+                {modalidades.map((modalidad) => (
+                  <option key={modalidad.id} value={modalidad.id}>
+                    {modalidad.nombre} (Premio: {modalidad.premio_por_peso}x)
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        )}
+
+        {selectedModalidad && (
+          <>
+            <div className="numeros-section">
+              <h3>4. Ingresa tus números (3 dígitos cada uno)</h3>
+              <div className="numeros-input">
+                <input
+                  type="text"
+                  value={numeroInput}
+                  onChange={(e) => setNumeroInput(e.target.value.replace(/\D/g, '').slice(0, 3))}
+                  placeholder="123"
+                  maxLength={3}
+                />
+                <button type="button" onClick={agregarNumero} className="btn-agregar">
+                  Agregar
+                </button>
+              </div>
+              
+              <div className="numeros-list">
+                {numeros.map((num) => (
+                  <div key={num} className="numero-card">
+                    <span>{num}</span>
+                    <button type="button" onClick={() => eliminarNumero(num)} className="btn-eliminar">
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="monto-section">
+              <div className="form-group">
+                <label>Monto por número</label>
+                <input
+                  type="number"
+                  value={montoPorNumero}
+                  onChange={(e) => setMontoPorNumero(Number(e.target.value))}
+                  min="1"
+                  required
+                />
+              </div>
+              <div className="monto-total">
+                <p>Monto total: <strong>{montoTotal.toFixed(2)} CUP</strong></p>
+                <p className="saldo-actual">Saldo disponible: {user.saldo_principal.toFixed(2)} CUP</p>
+              </div>
+            </div>
+
+            <button type="submit" disabled={loading || numeros.length === 0} className="btn-apostar">
+              {loading ? 'Procesando...' : `APOSTAR ${montoTotal.toFixed(2)} CUP`}
+            </button>
+          </>
+        )}
       </form>
     </div>
   );
