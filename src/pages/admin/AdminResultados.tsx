@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { lotteryService, resultadoService } from '../../services/api';
+import { RefreshCw, Trophy, CheckCircle2 } from 'lucide-react';
 
 interface ResultadoHoy {
   pick_3: string;
@@ -117,9 +118,7 @@ const AdminResultados: React.FC = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Resultados</h1>
         <button onClick={loadData} className="btn btn-ghost">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
+          <RefreshCw className="w-5 h-5" />
           Actualizar
         </button>
       </div>
@@ -170,9 +169,9 @@ const AdminResultados: React.FC = () => {
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
-                  {formatHora(tirada.hora)}
-                  {tirada.resultado_hoy && <span className="ml-1">✓</span>}
-                </button>
+                   {formatHora(tirada.hora)}
+                   {tirada.resultado_hoy && <CheckCircle2 className="w-4 h-4 ml-1 text-green-500" />}
+                 </button>
               ))
             )}
           </div>
@@ -183,7 +182,7 @@ const AdminResultados: React.FC = () => {
 
         {formData.tirada_id > 0 && (
           <div className="bg-green-50 text-green-700 p-3 rounded-lg text-sm font-medium flex items-center gap-2">
-            <span>✓</span>
+            <CheckCircle2 className="w-5 h-5" />
             <span>{getTiradaSeleccionada()?.loteria_nombre} - {formatHora(getTiradaSeleccionada()?.hora || '')}</span>
           </div>
         )}
@@ -201,13 +200,13 @@ const AdminResultados: React.FC = () => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Pick 4</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Pick 3</label>
             <input
               type="text"
               value={formData.pick_4}
-              onChange={(e) => setFormData({ ...formData, pick_4: e.target.value.replace(/\D/g, '').slice(0, 4) })}
-              placeholder="4 dígitos"
-              maxLength={4}
+              onChange={(e) => setFormData({ ...formData, pick_4: e.target.value.replace(/\D/g, '').slice(0, 3) })}
+              placeholder="3 dígitos"
+              maxLength={3}
               className="w-full p-3 border border-gray-200 rounded-lg"
             />
           </div>
@@ -228,7 +227,7 @@ const AdminResultados: React.FC = () => {
         
         {tiradas.length === 0 ? (
           <div className="p-8 text-center">
-            <span className="text-4xl">🏆</span>
+            <Trophy className="w-12 h-12 mx-auto text-gray-400" />
             <p className="mt-2 text-gray-600">No hay tiradas activas</p>
           </div>
         ) : (
@@ -242,7 +241,7 @@ const AdminResultados: React.FC = () => {
                     <th className="text-left p-4 text-sm font-semibold text-gray-600">Lotería</th>
                     <th className="text-left p-4 text-sm font-semibold text-gray-600">Hora</th>
                     <th className="text-left p-4 text-sm font-semibold text-gray-600">Pick 3</th>
-                    <th className="text-left p-4 text-sm font-semibold text-gray-600">Pick 4</th>
+                    <th className="text-left p-4 text-sm font-semibold text-gray-600">Pick 3</th>
                     <th className="text-left p-4 text-sm font-semibold text-gray-600">Estado</th>
                   </tr>
                 </thead>
@@ -269,7 +268,7 @@ const AdminResultados: React.FC = () => {
                         {tirada.resultado_hoy ? (
                           <div className="flex gap-1">
                             {(tirada.resultado_hoy.pick_4 || '').split('').map((d, i) => (
-                              <span key={i} className="w-8 h-8 bg-pink-500 text-white rounded-full flex items-center justify-center font-bold text-sm">
+                              <span key={i} className="w-8 h-8 bg-amber-400 text-white rounded-full flex items-center justify-center font-bold text-sm">
                                 {d}
                               </span>
                             ))}
@@ -322,11 +321,11 @@ const AdminResultados: React.FC = () => {
                       )}
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500 mb-1">Pick 4</p>
+                      <p className="text-xs text-gray-500 mb-1">Pick 3</p>
                       {tirada.resultado_hoy ? (
                         <div className="flex gap-1">
                           {(tirada.resultado_hoy.pick_4 || '').split('').map((d, i) => (
-                            <span key={i} className="w-7 h-7 bg-pink-500 text-white rounded-full flex items-center justify-center font-bold text-sm">
+                            <span key={i} className="w-7 h-7 bg-amber-400 text-white rounded-full flex items-center justify-center font-bold text-sm">
                               {d}
                             </span>
                           ))}

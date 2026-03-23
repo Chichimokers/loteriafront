@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { acreditacionService } from '../../services/api';
+import { RefreshCw, Wallet } from 'lucide-react';
 
 interface Acreditacion {
   id: number;
@@ -55,8 +56,10 @@ const AdminAcreditaciones: React.FC = () => {
   const formatTarjeta = (numero: string | undefined | null) => {
     if (!numero) return '-';
     const cleaned = String(numero).replace(/\D/g, '');
-    if (cleaned.length < 16) return String(numero);
-    return cleaned.replace(/(.{4})/g, '$1 ').trim();
+    const match = cleaned.match(/^(\d{0,4})(\d{0,4})(\d{0,4})(\d{0,4})$/);
+    if (!match) return String(numero);
+    const parts = [match[1], match[2], match[3], match[4]].filter(p => p);
+    return parts.join('-');
   };
 
   const formatFecha = (fecha: string) => {
@@ -82,9 +85,7 @@ const AdminAcreditaciones: React.FC = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Acreditaciones</h1>
         <button onClick={loadAcreditaciones} className="btn btn-ghost">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
+          <RefreshCw className="w-5 h-5" />
           Actualizar
         </button>
       </div>
@@ -111,7 +112,7 @@ const AdminAcreditaciones: React.FC = () => {
 
       {acreditaciones.length === 0 ? (
         <div className="bg-white p-8 rounded-xl text-center">
-          <span className="text-4xl">💰</span>
+          <Wallet className="w-12 h-12 mx-auto text-gray-400" />
           <p className="mt-2 text-gray-600">No hay acreditaciones en este estado</p>
         </div>
       ) : (

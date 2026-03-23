@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { adminService } from '../../services/api';
+import { RefreshCw, Trophy, Target, BarChart3 } from 'lucide-react';
 
 interface Metricas {
   total_apostado: string;
@@ -47,9 +48,7 @@ const AdminDashboard: React.FC = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
         <button onClick={loadMetricas} className="btn btn-ghost">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
+          <RefreshCw className="w-5 h-5" />
           Actualizar
         </button>
       </div>
@@ -84,7 +83,7 @@ const AdminDashboard: React.FC = () => {
           <div className="bg-white p-5 rounded-xl shadow-sm">
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
-                <span className="text-xl">🏆</span>
+                <Trophy className="w-5 h-5 text-amber-600" />
               </div>
               <div>
                 <p className="text-sm text-gray-500">Top Lotería</p>
@@ -102,7 +101,7 @@ const AdminDashboard: React.FC = () => {
           <div className="bg-white p-5 rounded-xl shadow-sm">
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                <span className="text-xl">🎯</span>
+                <Target className="w-5 h-5 text-purple-600" />
               </div>
               <div>
                 <p className="text-sm text-gray-500">Top Tirada</p>
@@ -118,7 +117,7 @@ const AdminDashboard: React.FC = () => {
 
         {!metricas?.top_loteria && !metricas?.top_tirada && (
           <div className="col-span-1 md:col-span-2 bg-white p-8 rounded-xl text-center">
-            <span className="text-4xl">📊</span>
+            <BarChart3 className="w-12 h-12 mx-auto text-gray-400" />
             <p className="mt-2 text-gray-600">No hay datos suficientes para mostrar</p>
           </div>
         )}

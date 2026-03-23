@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { authService } from '../../services/api';
+import { CheckCircle2, AlertCircle, Check } from 'lucide-react';
 
 const Profile: React.FC = () => {
   const { user, refreshUser } = useAuth();
@@ -15,8 +16,8 @@ const Profile: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     if (e.target.name === 'tarjeta_bancaria') {
-      const value = e.target.value.replace(/\D/g, '').slice(0, 14);
-      const match = value.match(/^(\d{0,3})(\d{0,3})(\d{0,3})(\d{0,4})$/);
+      const value = e.target.value.replace(/\D/g, '').slice(0, 16);
+      const match = value.match(/^(\d{0,4})(\d{0,4})(\d{0,4})(\d{0,4})$/);
       if (match) {
         const parts = [match[1], match[2], match[3], match[4]].filter(p => p);
         setFormData({ ...formData, [e.target.name]: parts.join('-') });
@@ -33,7 +34,7 @@ const Profile: React.FC = () => {
     setMessage('');
 
     try {
-      await authService.getCurrentUser();
+      await authService.updateProfile(formData);
       setMessage('Perfil actualizado correctamente');
       await refreshUser();
     } catch (err: unknown) {
@@ -59,17 +60,13 @@ const Profile: React.FC = () => {
 
       {message && (
         <div className="success-message mb-6">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
+          <CheckCircle2 className="w-5 h-5" />
           {message}
         </div>
       )}
       {error && (
         <div className="error-message mb-6">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
+          <AlertCircle className="w-5 h-5" />
           {error}
         </div>
       )}
@@ -121,7 +118,7 @@ const Profile: React.FC = () => {
               value={formData.tarjeta_bancaria}
               onChange={handleChange}
               className="input"
-              placeholder="xxx-xxx-xxx-xxxx"
+              placeholder="xxxx-xxxx-xxxx-xxxx"
             />
           </div>
 
@@ -148,9 +145,7 @@ const Profile: React.FC = () => {
                 <div className="w-5 h-5 border-4 border-white border-t-transparent rounded-full animate-spin" />
               ) : (
                 <>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
+                  <Check className="w-5 h-5" />
                   Guardar Cambios
                 </>
               )}

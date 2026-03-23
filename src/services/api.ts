@@ -76,6 +76,11 @@ export const authService = {
     const response = await api.get('/usuarios/me/');
     return response.data;
   },
+
+  updateProfile: async (data: Partial<{ movil: string; tarjeta_bancaria: string; banco: string }>) => {
+    const response = await api.patch('/usuarios/me/', data);
+    return response.data;
+  },
 };
 
 export const lotteryService = {

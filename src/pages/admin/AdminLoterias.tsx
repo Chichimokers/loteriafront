@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { lotteryService } from '../../services/api';
 import api from '../../services/api';
+import { RefreshCw, Dices, Image, Trash2 } from 'lucide-react';
 
 interface Loteria {
   id: number;
@@ -94,9 +95,7 @@ const AdminLoterias: React.FC = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Loterías</h1>
         <button onClick={loadLoterias} className="btn btn-ghost">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
+          <RefreshCw className="w-5 h-5" />
           Actualizar
         </button>
       </div>
@@ -149,7 +148,7 @@ const AdminLoterias: React.FC = () => {
 
       {loterias.length === 0 ? (
         <div className="bg-white p-8 rounded-xl text-center">
-          <span className="text-4xl">🎰</span>
+          <Dices className="w-12 h-12 mx-auto text-gray-400" />
           <p className="mt-2 text-gray-600">No hay loterías configuradas</p>
         </div>
       ) : (
@@ -162,7 +161,7 @@ const AdminLoterias: React.FC = () => {
                   {loteria.foto ? (
                     <img src={loteria.foto} alt={loteria.nombre} className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-4xl">📷</span>
+                    <Image className="w-12 h-12 text-gray-400" />
                   )}
                 </div>
                 <div className="flex justify-between items-center mb-3">
@@ -182,7 +181,7 @@ const AdminLoterias: React.FC = () => {
                     onClick={() => handleDelete(loteria.id)}
                     className="px-3 py-2 bg-red-100 text-red-700 rounded-lg text-sm font-medium"
                   >
-                    🗑
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               </div>
@@ -198,7 +197,7 @@ const AdminLoterias: React.FC = () => {
                     {loteria.foto ? (
                       <img src={loteria.foto} alt={loteria.nombre} className="w-full h-full object-cover" />
                     ) : (
-                      <span className="text-2xl">📷</span>
+                      <Image className="w-8 h-8 text-gray-400" />
                     )}
                   </div>
                   <div className="flex-1">
@@ -219,7 +218,7 @@ const AdminLoterias: React.FC = () => {
                         onClick={() => handleDelete(loteria.id)}
                         className="px-4 py-2 bg-red-100 text-red-700 rounded-lg text-sm font-medium"
                       >
-                        🗑
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </div>

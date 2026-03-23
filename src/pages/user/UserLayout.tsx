@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { Dices, Wallet, LogOut, Menu, X } from 'lucide-react';
 
 const UserLayout: React.FC = () => {
   const { user, logout } = useAuth();
@@ -29,7 +30,7 @@ const UserLayout: React.FC = () => {
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3">
               <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                <span className="text-2xl">🎰</span>
+                <Dices className="w-6 h-6" />
               </div>
               <span className="text-xl font-bold tracking-tight">Lotería</span>
             </Link>
@@ -64,18 +65,17 @@ const UserLayout: React.FC = () => {
 
             {/* User Info & Logout */}
             <div className="hidden md:flex items-center gap-4">
-              <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">
+              <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full flex items-center gap-2">
+                <Wallet className="w-4 h-4" />
                 <span className="text-sm font-medium">
-                  💰 {user.saldo_principal.toFixed(2)} CUP
+                  {user.saldo_principal.toFixed(2)} CUP
                 </span>
               </div>
               <button 
                 onClick={handleLogout}
                 className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/30 transition-all duration-200 text-sm font-medium flex items-center gap-2"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
+                <LogOut className="w-4 h-4" />
                 Salir
               </button>
             </div>
@@ -85,13 +85,11 @@ const UserLayout: React.FC = () => {
               className="md:hidden p-2 rounded-lg hover:bg-white/20 transition-colors"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                {mobileMenuOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                )}
-              </svg>
+              {mobileMenuOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <Menu className="w-6 h-6" />
+              )}
             </button>
           </div>
         </div>
@@ -129,18 +127,17 @@ const UserLayout: React.FC = () => {
                 Perfil
               </Link>
               <div className="pt-4 border-t border-white/20">
-                <div className="bg-white/20 px-4 py-3 rounded-xl mb-3">
+                <div className="bg-white/20 px-4 py-3 rounded-xl mb-3 flex items-center gap-2">
+                  <Wallet className="w-4 h-4" />
                   <span className="text-sm font-medium">
-                    💰 Saldo: {user.saldo_principal.toFixed(2)} CUP
+                    Saldo: {user.saldo_principal.toFixed(2)} CUP
                   </span>
                 </div>
                 <button 
                   onClick={handleLogout}
                   className="w-full px-4 py-3 rounded-xl bg-white/10 hover:bg-white/30 transition-colors font-medium flex items-center justify-center gap-2"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                  </svg>
+                  <LogOut className="w-5 h-5" />
                   Cerrar Sesión
                 </button>
               </div>

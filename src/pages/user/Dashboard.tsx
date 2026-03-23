@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { tarjetaService, acreditacionService, extraccionService } from '../../services/api';
+import { Wallet, CreditCard, Target, BarChart3, Dices, User, Smartphone, X, Phone } from 'lucide-react';
 
 interface Tarjeta {
   id: number;
@@ -124,7 +125,7 @@ const Dashboard: React.FC = () => {
   const formatTarjeta = (numero: string | undefined | null) => {
     if (!numero) return '-';
     const cleaned = String(numero).replace(/\D/g, '');
-    const match = cleaned.match(/^(\d{0,3})(\d{0,3})(\d{0,3})(\d{0,4})$/);
+    const match = cleaned.match(/^(\d{0,4})(\d{0,4})(\d{0,4})(\d{0,4})$/);
     if (!match) return String(numero);
     const parts = [match[1], match[2], match[3], match[4]].filter(p => p);
     return parts.join('-');
@@ -149,7 +150,7 @@ const Dashboard: React.FC = () => {
       {/* Saldo Principal */}
       <div className="bg-gradient-to-br from-primary to-primary-600 rounded-2xl p-5 text-white">
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-lg">💰</span>
+          <Wallet className="w-5 h-5" />
           <span className="text-white/80 text-sm font-medium">Saldo Principal</span>
         </div>
         <div className="text-4xl font-bold mb-4">{user.saldo_principal.toFixed(2)} CUP</div>
@@ -167,7 +168,7 @@ const Dashboard: React.FC = () => {
       {/* Saldo Extracción */}
       <div className="bg-gradient-to-br from-success to-success-600 rounded-2xl p-5 text-white">
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-lg">🏦</span>
+          <CreditCard className="w-5 h-5" />
           <span className="text-white/80 text-sm font-medium">Disponible para extraer</span>
         </div>
         <div className="text-3xl font-bold mb-4">{user.saldo_extraccion.toFixed(2)} CUP</div>
@@ -182,19 +183,19 @@ const Dashboard: React.FC = () => {
       {/* Acciones Rápidas */}
       <div className="grid grid-cols-4 gap-3">
         <a href="/apuestas" className="flex flex-col items-center gap-2 p-3 bg-white rounded-xl shadow-sm">
-          <span className="text-2xl">🎯</span>
+          <Target className="w-6 h-6 text-blue-500" />
           <span className="text-xs font-medium text-gray-700">Apostar</span>
         </a>
         <a href="/historial" className="flex flex-col items-center gap-2 p-3 bg-white rounded-xl shadow-sm">
-          <span className="text-2xl">📊</span>
+          <BarChart3 className="w-6 h-6 text-purple-500" />
           <span className="text-xs font-medium text-gray-700">Historial</span>
         </a>
         <a href="/resultados" className="flex flex-col items-center gap-2 p-3 bg-white rounded-xl shadow-sm">
-          <span className="text-2xl">🎰</span>
+          <Dices className="w-6 h-6 text-orange-500" />
           <span className="text-xs font-medium text-gray-700">Resultados</span>
         </a>
         <a href="/perfil" className="flex flex-col items-center gap-2 p-3 bg-white rounded-xl shadow-sm">
-          <span className="text-2xl">👤</span>
+          <User className="w-6 h-6 text-green-500" />
           <span className="text-xs font-medium text-gray-700">Perfil</span>
         </a>
       </div>
@@ -205,7 +206,9 @@ const Dashboard: React.FC = () => {
           <div className="bg-white w-full max-w-md rounded-t-2xl max-h-[90vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center p-4 border-b">
               <h3 className="text-lg font-bold text-gray-900">Acreditar Saldo</h3>
-              <button onClick={() => setShowAcreditarModal(false)} className="text-gray-400 text-xl">✕</button>
+              <button onClick={() => setShowAcreditarModal(false)} className="text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
             </div>
             <div className="p-4">
               {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-4">{error}</div>}
@@ -224,8 +227,14 @@ const Dashboard: React.FC = () => {
                     <p className="font-semibold text-gray-900">{getBancoLabel(tarjeta.banco)}</p>
                     {selectedCardId === tarjeta.id && (
                       <div className="mt-2 text-sm text-gray-600 space-y-1">
-                        <p>📱 {formatTarjeta(tarjeta.numero)}</p>
-                        <p>📞 {tarjeta.movil}</p>
+                        <div className="flex items-center gap-2">
+                          <Smartphone className="w-4 h-4" />
+                          <span>{formatTarjeta(tarjeta.numero)}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Phone className="w-4 h-4" />
+                          <span>{tarjeta.movil}</span>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -277,7 +286,9 @@ const Dashboard: React.FC = () => {
           <div className="bg-white w-full max-w-md rounded-t-2xl max-h-[90vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center p-4 border-b">
               <h3 className="text-lg font-bold text-gray-900">Extraer Saldo</h3>
-              <button onClick={() => setShowExtraerModal(false)} className="text-gray-400 text-xl">✕</button>
+              <button onClick={() => setShowExtraerModal(false)} className="text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
             </div>
             <div className="p-4">
               <div className="bg-primary/10 p-4 rounded-xl flex justify-between items-center mb-4">

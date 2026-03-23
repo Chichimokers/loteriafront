@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { lotteryService } from '../../services/api';
 import api from '../../services/api';
+import { RefreshCw, Clock, Trash2, Pause, Play } from 'lucide-react';
 
 interface Tirada {
   id: number;
@@ -86,9 +87,7 @@ const AdminTiradas: React.FC = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Tiradas</h1>
         <button onClick={loadData} className="btn btn-ghost">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
+          <RefreshCw className="w-5 h-5" />
           Actualizar
         </button>
       </div>
@@ -146,7 +145,7 @@ const AdminTiradas: React.FC = () => {
 
       {tiradas.length === 0 ? (
         <div className="bg-white p-8 rounded-xl text-center">
-          <span className="text-4xl">⏰</span>
+          <Clock className="w-12 h-12 mx-auto text-gray-400" />
           <p className="mt-2 text-gray-600">No hay tiradas configuradas</p>
         </div>
       ) : (
@@ -178,15 +177,16 @@ const AdminTiradas: React.FC = () => {
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleToggleActiva(tirada)}
-                          className={`px-3 py-1 rounded text-xs font-medium ${tirada.activa ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}`}
+                          className={`px-3 py-1 rounded text-xs font-medium flex items-center gap-1 ${tirada.activa ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}`}
                         >
-                          {tirada.activa ? '⏸ Desactivar' : '▶ Activar'}
+                          {tirada.activa ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+                          {tirada.activa ? 'Desactivar' : 'Activar'}
                         </button>
                         <button
                           onClick={() => handleDelete(tirada.id)}
                           className="px-3 py-1 bg-red-100 text-red-700 rounded text-xs font-medium"
                         >
-                          🗑
+                          <Trash2 className="w-3 h-3" />
                         </button>
                       </div>
                     </td>
@@ -212,15 +212,16 @@ const AdminTiradas: React.FC = () => {
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleToggleActiva(tirada)}
-                    className={`flex-1 py-2 rounded-lg text-sm font-medium ${tirada.activa ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}`}
+                    className={`flex-1 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-1 ${tirada.activa ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}`}
                   >
-                    {tirada.activa ? '⏸ Desactivar' : '▶ Activar'}
+                    {tirada.activa ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                    {tirada.activa ? 'Desactivar' : 'Activar'}
                   </button>
                   <button
                     onClick={() => handleDelete(tirada.id)}
                     className="px-4 py-2 bg-red-100 text-red-700 rounded-lg text-sm font-medium"
                   >
-                    🗑
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               </div>

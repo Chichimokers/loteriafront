@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { Sparkles, AlertCircle, UserPlus } from 'lucide-react';
 
 const Register: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -18,8 +19,8 @@ const Register: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     if (e.target.name === 'tarjeta_bancaria') {
-      const value = e.target.value.replace(/\D/g, '').slice(0, 14);
-      const match = value.match(/^(\d{0,3})(\d{0,3})(\d{0,3})(\d{0,4})$/);
+      const value = e.target.value.replace(/\D/g, '').slice(0, 16);
+      const match = value.match(/^(\d{0,4})(\d{0,4})(\d{0,4})(\d{0,4})$/);
       if (match) {
         const parts = [match[1], match[2], match[3], match[4]].filter(p => p);
         setFormData({ ...formData, [e.target.name]: parts.join('-') });
@@ -68,7 +69,7 @@ const Register: React.FC = () => {
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-2xl shadow-2xl mb-4">
-            <span className="text-5xl">🎰</span>
+            <Sparkles className="w-10 h-10 text-blue-600" />
           </div>
           <h1 className="text-4xl font-bold text-white mb-2">Lotería</h1>
           <p className="text-white/80">Únete y empieza a ganar</p>
@@ -80,9 +81,7 @@ const Register: React.FC = () => {
           
           {error && (
             <div className="bg-red-50 text-red-600 px-4 py-3 rounded-xl mb-6 flex items-center gap-2">
-              <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+              <AlertCircle className="w-5 h-5 flex-shrink-0" />
               <span className="text-sm">{error}</span>
             </div>
           )}
@@ -154,7 +153,7 @@ const Register: React.FC = () => {
                 value={formData.tarjeta_bancaria}
                 onChange={handleChange}
                 className="input"
-                placeholder="xxx-xxx-xxx-xxxx"
+                placeholder="xxxx-xxxx-xxxx-xxxx"
                 required
               />
             </div>
@@ -187,9 +186,7 @@ const Register: React.FC = () => {
               ) : (
                 <>
                   Crear Cuenta
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                  </svg>
+                  <UserPlus className="w-5 h-5" />
                 </>
               )}
             </button>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { lotteryService, apuestaService } from '../../services/api';
+import { Wallet, CheckCircle2, AlertCircle, Dices, Plus, X } from 'lucide-react';
 
 interface Loteria {
   id: number;
@@ -169,26 +170,23 @@ const Betting: React.FC = () => {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-900">Realizar Apuesta</h1>
-        <div className="bg-primary/10 px-4 py-2 rounded-full">
+        <div className="bg-primary/10 px-4 py-2 rounded-full flex items-center gap-2">
+          <Wallet className="w-4 h-4 text-primary" />
           <span className="text-sm font-medium text-primary">
-            💰 Saldo: {user.saldo_principal.toFixed(2)} CUP
+            Saldo: {user.saldo_principal.toFixed(2)} CUP
           </span>
         </div>
       </div>
 
       {message && (
         <div className="success-message">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
+          <CheckCircle2 className="w-5 h-5" />
           {message}
         </div>
       )}
       {error && (
         <div className="error-message">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
+          <AlertCircle className="w-5 h-5" />
           {error}
         </div>
       )}
@@ -227,9 +225,7 @@ const Betting: React.FC = () => {
                 <p className="font-semibold text-gray-900 text-sm">{loteria.nombre}</p>
                 {selectedLoteria === loteria.id && (
                   <div className="absolute -top-2 -right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
-                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
+                    <CheckCircle2 className="w-4 h-4 text-white" />
                   </div>
                 )}
               </button>
@@ -307,9 +303,7 @@ const Betting: React.FC = () => {
                 disabled={numeroInput.length !== 3}
                 className="btn btn-primary px-6"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
+                <Plus className="w-5 h-5" />
                 Agregar
               </button>
             </div>
@@ -331,9 +325,7 @@ const Betting: React.FC = () => {
                       onClick={() => eliminarNumero(num)}
                       className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
+                      <X className="w-4 h-4" />
                     </button>
                   </div>
                 ))}
@@ -372,9 +364,9 @@ const Betting: React.FC = () => {
                 <div className="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin" />
               ) : (
                 <>
-                  <span className="text-2xl mr-2">🎰</span>
+                  <Dices className="w-6 h-6 mr-2" />
                   APOSTAR {montoTotal.toFixed(2)} CUP
-                  <span className="text-2xl ml-2">🎰</span>
+                  <Dices className="w-6 h-6 ml-2" />
                 </>
               )}
             </button>

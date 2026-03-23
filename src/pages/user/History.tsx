@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { apuestaService, lotteryService } from '../../services/api';
 import ResultadosHoy from './ResultadosHoy';
+import { Dices, RefreshCw, Clock, Timer, Frown, PartyPopper } from 'lucide-react';
 
 interface Apuesta {
   id: number;
@@ -24,24 +25,23 @@ const History: React.FC = () => {
   const [apuestas, setApuestas] = useState<Apuesta[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadApuestas();
-  }, []);
+  const fetchApuestas = async () => {
+    const data = await apuestaService.getApuestas();
+    const apuestasArr = Array.isArray(data) ? data : (data as { results?: Apuesta[] }).results || [];
+
+    const tiradasData = await lotteryService.getTiradasActivas();
+    const tiradasMap = new Map<number, string>();
+    tiradasData.forEach((t: { id: number; hora: string }) => tiradasMap.set(t.id, t.hora));
+
+    return apuestasArr.map((apuesta: Apuesta) => ({
+      ...apuesta,
+      hora_tirada: tiradasMap.get(apuesta.tirada) || undefined
+    }));
+  };
 
   const loadApuestas = async () => {
     try {
-      const data = await apuestaService.getApuestas();
-      const apuestasArr = Array.isArray(data) ? data : (data as { results?: Apuesta[] }).results || [];
-      
-      const tiradasData = await lotteryService.getTiradasActivas();
-      const tiradasMap = new Map<number, string>();
-      tiradasData.forEach((t: { id: number; hora: string }) => tiradasMap.set(t.id, t.hora));
-      
-      const apuestasWithHora = apuestasArr.map((apuesta: Apuesta) => ({
-        ...apuesta,
-        hora_tirada: tiradasMap.get(apuesta.tirada) || undefined
-      }));
-      
+      const apuestasWithHora = await fetchApuestas();
       setApuestas(apuestasWithHora);
     } catch (err) {
       console.error('Error loading apuestas:', err);
@@ -50,17 +50,26 @@ const History: React.FC = () => {
     }
   };
 
-  const getStatusInfo = (apuesta: Apuesta): { label: string; styles: string; icon: string } => {
+  useEffect(() => {
+    let intervalId: ReturnType<typeof setInterval>;
+
+    loadApuestas();
+    intervalId = setInterval(loadApuestas, 15000);
+
+    return () => clearInterval(intervalId);
+  }, []);
+
+  const getStatusInfo = (apuesta: Apuesta): { label: string; styles: string; icon: React.ReactNode } => {
     if (apuesta.resultado === null && !apuesta.paga) {
-      return { label: 'Pendiente', styles: 'bg-yellow-50 text-yellow-700 border-yellow-200', icon: '⏳' };
+      return { label: 'Pendiente', styles: 'bg-yellow-50 text-yellow-700 border-yellow-200', icon: <Timer className="w-4 h-4" /> };
     }
     if (apuesta.resultado !== null && !apuesta.paga) {
-      return { label: 'Perdido', styles: 'bg-red-50 text-red-600 border-red-200', icon: '😔' };
+      return { label: 'Perdido', styles: 'bg-red-50 text-red-600 border-red-200', icon: <Frown className="w-4 h-4" /> };
     }
     if (apuesta.paga) {
-      return { label: 'Ganado', styles: 'bg-success/10 text-success border-success/20', icon: '🎉' };
+      return { label: 'Ganado', styles: 'bg-success/10 text-success border-success/20', icon: <PartyPopper className="w-4 h-4" /> };
     }
-    return { label: 'Pendiente', styles: 'bg-yellow-50 text-yellow-700 border-yellow-200', icon: '⏳' };
+    return { label: 'Pendiente', styles: 'bg-yellow-50 text-yellow-700 border-yellow-200', icon: <Timer className="w-4 h-4" /> };
   };
 
   const getNum = (val: number | string | undefined | null): number => {
@@ -94,9 +103,7 @@ const History: React.FC = () => {
           onClick={loadApuestas}
           className="btn btn-ghost"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
+          <RefreshCw className="w-5 h-5" />
           Actualizar
         </button>
       </div>
@@ -111,7 +118,7 @@ const History: React.FC = () => {
         {apuestas.length === 0 ? (
           <div className="text-center py-12">
             <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-4xl">🎰</span>
+              <Dices className="w-10 h-10 text-gray-400" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">No tienes apuestas aún</h3>
             <p className="text-gray-500 mb-6">¡Haz tu primera apuesta y都有可能 ganar!</p>
@@ -135,8 +142,9 @@ const History: React.FC = () => {
                     </p>
                   </div>
                   {apuesta.hora_tirada && (
-                    <div className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">
-                      ⏰ Tirada: {apuesta.hora_tirada.split(':').slice(0,2).join(':')}
+                    <div className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-medium flex items-center gap-1">
+                      <Clock className="w-4 h-4" />
+                      Tirada: {apuesta.hora_tirada.split(':').slice(0,2).join(':')}
                     </div>
                   )}
                   {(() => {
@@ -184,7 +192,7 @@ const History: React.FC = () => {
                       )}
                       {apuesta.resultado.pick_4 && (
                         <div className="flex items-center gap-2">
-                          <span className="text-xs text-gray-500">Pick 4:</span>
+                          <span className="text-xs text-gray-500">Pick 3:</span>
                           <span className="font-bold text-gray-900">{apuesta.resultado.pick_4}</span>
                         </div>
                       )}
