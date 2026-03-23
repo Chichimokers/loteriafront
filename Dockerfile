@@ -3,15 +3,12 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-ARG VITE_API_URL
-
 COPY package*.json ./
 COPY vite.config.ts ./
 COPY tsconfig.json ./
 COPY tsconfig.node.json ./
 COPY index.html ./
-
-RUN echo "VITE_API_URL=${VITE_API_URL}" > .env.production
+COPY .env .env
 
 RUN npm install
 
