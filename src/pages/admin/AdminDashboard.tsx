@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { adminService } from '../../services/api';
 import { RefreshCw, Trophy, Target, BarChart3 } from 'lucide-react';
+import { formatMonto } from '../../utils/format';
 
 interface Metricas {
   total_apostado: string;
@@ -57,22 +58,22 @@ const AdminDashboard: React.FC = () => {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="bg-gradient-to-br from-indigo-500 to-indigo-700 p-5 rounded-xl text-white">
           <p className="text-white/80 text-sm font-medium">Total Apostado</p>
-          <p className="text-2xl font-bold mt-1">{getNum(metricas?.total_apostado).toFixed(2)}</p>
+          <p className="text-2xl font-bold mt-1">{formatMonto(getNum(metricas?.total_apostado))}</p>
           <p className="text-xs text-white/60 mt-1">CUP</p>
         </div>
         <div className="bg-gradient-to-br from-green-500 to-green-700 p-5 rounded-xl text-white">
           <p className="text-white/80 text-sm font-medium">Premios Pagados</p>
-          <p className="text-2xl font-bold mt-1">{getNum(metricas?.total_premios_pagados).toFixed(2)}</p>
+          <p className="text-2xl font-bold mt-1">{formatMonto(getNum(metricas?.total_premios_pagados))}</p>
           <p className="text-xs text-white/60 mt-1">CUP</p>
         </div>
         <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-5 rounded-xl text-white">
           <p className="text-white/80 text-sm font-medium">Acreditado Hoy</p>
-          <p className="text-2xl font-bold mt-1">{getNum(metricas?.acreditado_hoy).toFixed(2)}</p>
+          <p className="text-2xl font-bold mt-1">{formatMonto(getNum(metricas?.acreditado_hoy))}</p>
           <p className="text-xs text-white/60 mt-1">CUP</p>
         </div>
         <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-5 rounded-xl text-white">
           <p className="text-white/80 text-sm font-medium">Extraído Hoy</p>
-          <p className="text-2xl font-bold mt-1">{getNum(metricas?.extraido_hoy).toFixed(2)}</p>
+          <p className="text-2xl font-bold mt-1">{formatMonto(getNum(metricas?.extraido_hoy))}</p>
           <p className="text-xs text-white/60 mt-1">CUP</p>
         </div>
       </div>

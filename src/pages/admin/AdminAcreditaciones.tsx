@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useToast } from '../../context/ToastContext';
 import { acreditacionService } from '../../services/api';
-import { RefreshCw, Wallet } from 'lucide-react';
+import { RefreshCw, Wallet, CreditCard, MessageSquare, Hash, Calendar, Check, X as XIcon } from 'lucide-react';
+import { formatMonto } from '../../utils/format';
 
 interface Acreditacion {
   id: number;
@@ -14,6 +16,7 @@ interface Acreditacion {
 }
 
 const AdminAcreditaciones: React.FC = () => {
+  const toast = useToast();
   const [acreditaciones, setAcreditaciones] = useState<Acreditacion[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'pendiente' | 'aprobada' | 'rechazada'>('pendiente');
@@ -38,18 +41,20 @@ const AdminAcreditaciones: React.FC = () => {
   const handleApprove = async (id: number) => {
     try {
       await acreditacionService.approveAcreditacion(id);
+      toast.showToast('Acreditación aprobada', 'success');
       await loadAcreditaciones();
     } catch (err) {
-      console.error('Error approving acreditacion:', err);
+      toast.showToast('Error al aprobar', 'error');
     }
   };
 
   const handleReject = async (id: number) => {
     try {
       await acreditacionService.rejectAcreditacion(id);
+      toast.showToast('Acreditación rechazada', 'success');
       await loadAcreditaciones();
     } catch (err) {
-      console.error('Error rejecting acreditacion:', err);
+      toast.showToast('Error al rechazar', 'error');
     }
   };
 
@@ -58,15 +63,13 @@ const AdminAcreditaciones: React.FC = () => {
     const cleaned = String(numero).replace(/\D/g, '');
     const match = cleaned.match(/^(\d{0,4})(\d{0,4})(\d{0,4})(\d{0,4})$/);
     if (!match) return String(numero);
-    const parts = [match[1], match[2], match[3], match[4]].filter(p => p);
-    return parts.join('-');
+    return [match[1], match[2], match[3], match[4]].filter(p => p).join('-');
   };
 
   const formatFecha = (fecha: string) => {
     return new Date(fecha).toLocaleDateString('es-ES', {
       day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
+      month: 'short',
       hour: '2-digit',
       minute: '2-digit'
     });
@@ -84,25 +87,25 @@ const AdminAcreditaciones: React.FC = () => {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Acreditaciones</h1>
-        <button onClick={loadAcreditaciones} className="btn btn-ghost">
-          <RefreshCw className="w-5 h-5" />
-          Actualizar
+        <button onClick={loadAcreditaciones} className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors">
+          <RefreshCw className="w-5 h-5 text-gray-600" />
         </button>
       </div>
 
-      <div className="flex gap-2 overflow-x-auto pb-2">
+      {/* Filtros */}
+      <div className="flex gap-2">
         {[
-          { key: 'pendiente', label: 'Pendientes' },
-          { key: 'aprobada', label: 'Aprobadas' },
-          { key: 'rechazada', label: 'Rechazadas' },
+          { key: 'pendiente', label: 'Pendientes', color: 'bg-amber-500' },
+          { key: 'aprobada', label: 'Aprobadas', color: 'bg-green-500' },
+          { key: 'rechazada', label: 'Rechazadas', color: 'bg-red-500' },
         ].map((f) => (
           <button
             key={f.key}
             onClick={() => setFilter(f.key as typeof filter)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+            className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${
               filter === f.key
-                ? 'bg-indigo-500 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                ? `${f.color} text-white shadow-md`
+                : 'bg-gray-100 text-gray-600'
             }`}
           >
             {f.label}
@@ -111,103 +114,81 @@ const AdminAcreditaciones: React.FC = () => {
       </div>
 
       {acreditaciones.length === 0 ? (
-        <div className="bg-white p-8 rounded-xl text-center">
-          <Wallet className="w-12 h-12 mx-auto text-gray-400" />
-          <p className="mt-2 text-gray-600">No hay acreditaciones en este estado</p>
+        <div className="bg-white p-8 rounded-2xl text-center shadow-sm">
+          <Wallet className="w-12 h-12 mx-auto text-gray-300" />
+          <p className="mt-3 text-gray-500 font-medium">No hay acreditaciones</p>
         </div>
       ) : (
-        <>
-          {/* Tabla PC */}
-          <div className="hidden lg:block bg-white rounded-xl shadow-sm overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b">
-                <tr>
-                  <th className="text-left p-4 text-sm font-semibold text-gray-600">ID</th>
-                  <th className="text-left p-4 text-sm font-semibold text-gray-600">Usuario</th>
-                  <th className="text-left p-4 text-sm font-semibold text-gray-600">Tarjeta</th>
-                  <th className="text-left p-4 text-sm font-semibold text-gray-600">Monto</th>
-                  <th className="text-left p-4 text-sm font-semibold text-gray-600">SMS</th>
-                  <th className="text-left p-4 text-sm font-semibold text-gray-600">ID Transferencia</th>
-                  <th className="text-left p-4 text-sm font-semibold text-gray-600">Fecha</th>
-                  {filter === 'pendiente' && <th className="text-left p-4 text-sm font-semibold text-gray-600">Acciones</th>}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {acreditaciones.map((acreditacion) => {
-                  const montoNum = typeof acreditacion.monto === 'string' ? parseFloat(acreditacion.monto) : acreditacion.monto;
-                  return (
-                    <tr key={acreditacion.id} className="hover:bg-gray-50">
-                      <td className="p-4 text-sm text-gray-900">#{acreditacion.id}</td>
-                      <td className="p-4 text-sm text-gray-600">{acreditacion.usuario_email}</td>
-                      <td className="p-4 text-sm text-gray-600 font-mono">{formatTarjeta(acreditacion.tarjeta_numero)}</td>
-                      <td className="p-4 text-sm font-bold text-gray-900">{montoNum.toFixed(2)} CUP</td>
-                      <td className="p-4 text-sm text-gray-600 max-w-[200px] truncate">{acreditacion.sms_confirmacion || '-'}</td>
-                      <td className="p-4 text-sm text-gray-600 font-mono">{acreditacion.id_transferencia || '-'}</td>
-                      <td className="p-4 text-sm text-gray-600">{formatFecha(acreditacion.fecha)}</td>
-                      {filter === 'pendiente' && (
-                        <td className="p-4">
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => handleApprove(acreditacion.id)}
-                              className="px-3 py-1 bg-green-500 text-white rounded text-xs font-medium hover:bg-green-600"
-                            >
-                              Aprobar
-                            </button>
-                            <button
-                              onClick={() => handleReject(acreditacion.id)}
-                              className="px-3 py-1 bg-red-500 text-white rounded text-xs font-medium hover:bg-red-600"
-                            >
-                              Rechazar
-                            </button>
-                          </div>
-                        </td>
-                      )}
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Cards Móvil */}
-          <div className="lg:hidden space-y-3">
-            {acreditaciones.map((acreditacion) => {
-              const montoNum = typeof acreditacion.monto === 'string' ? parseFloat(acreditacion.monto) : acreditacion.monto;
-              return (
-                <div key={acreditacion.id} className="bg-white p-4 rounded-xl shadow-sm space-y-3">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="font-semibold text-gray-900">#{acreditacion.id} - {acreditacion.usuario_email}</p>
-                      <p className="text-sm text-gray-500">{formatTarjeta(acreditacion.tarjeta_numero)}</p>
-                    </div>
-                    <span className="text-lg font-bold text-indigo-500">{montoNum.toFixed(2)} CUP</span>
+        <div className="space-y-3">
+          {acreditaciones.map((acreditacion) => {
+            const montoNum = typeof acreditacion.monto === 'string' ? parseFloat(acreditacion.monto) : acreditacion.monto;
+            return (
+              <div key={acreditacion.id} className="bg-white rounded-2xl shadow-sm overflow-hidden">
+                {/* Header con monto destacado */}
+                <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-indigo-500 to-indigo-600">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-white/70">#{acreditacion.id}</span>
+                    <span className="text-sm font-semibold text-white truncate max-w-[180px]">
+                      {acreditacion.usuario_email}
+                    </span>
                   </div>
-                  <div className="text-sm text-gray-500">
-                    <p>SMS: {acreditacion.sms_confirmacion || '-'}</p>
-                    <p>ID Transferencia: {acreditacion.id_transferencia || '-'}</p>
-                    <p>{formatFecha(acreditacion.fecha)}</p>
-                  </div>
-                  {filter === 'pendiente' && (
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleApprove(acreditacion.id)}
-                        className="flex-1 py-2 bg-green-500 text-white rounded-lg text-sm font-medium"
-                      >
-                        Aprobar
-                      </button>
-                      <button
-                        onClick={() => handleReject(acreditacion.id)}
-                        className="flex-1 py-2 bg-red-500 text-white rounded-lg text-sm font-medium"
-                      >
-                        Rechazar
-                      </button>
-                    </div>
-                  )}
+                  <span className="text-lg font-bold text-white">{formatMonto(montoNum)} CUP</span>
                 </div>
-              );
-            })}
-          </div>
-        </>
+
+                {/* Info */}
+                <div className="p-4 space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="flex items-start gap-2">
+                      <CreditCard className="w-4 h-4 text-indigo-400 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">Tarjeta</p>
+                        <p className="text-sm font-mono font-medium text-gray-900">{formatTarjeta(acreditacion.tarjeta_numero)}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Hash className="w-4 h-4 text-indigo-400 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">ID Transferencia</p>
+                        <p className="text-sm font-mono font-medium text-gray-900">{acreditacion.id_transferencia || '-'}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <MessageSquare className="w-4 h-4 text-indigo-400 mt-0.5 flex-shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">SMS Confirmación</p>
+                      <p className="text-sm text-gray-900 break-all">{acreditacion.sms_confirmacion || '-'}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-gray-400">
+                    <Calendar className="w-3.5 h-3.5" />
+                    <span>{formatFecha(acreditacion.fecha)}</span>
+                  </div>
+                </div>
+
+                {/* Acciones */}
+                {filter === 'pendiente' && (
+                  <div className="flex gap-2 px-4 pb-4">
+                    <button
+                      onClick={() => handleApprove(acreditacion.id)}
+                      className="flex-1 py-3 bg-green-500 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+                    >
+                      <Check className="w-4 h-4" />
+                      Aprobar
+                    </button>
+                    <button
+                      onClick={() => handleReject(acreditacion.id)}
+                      className="flex-1 py-3 bg-red-500 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+                    >
+                      <XIcon className="w-4 h-4" />
+                      Rechazar
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       )}
     </div>
   );

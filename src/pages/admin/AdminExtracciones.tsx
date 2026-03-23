@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { extraccionService, usuarioService } from '../../services/api';
 import { RefreshCw, BanknoteArrowDown } from 'lucide-react';
+import { formatMonto } from '../../utils/format';
 
 interface Extraccion {
   id: number;
@@ -151,7 +152,7 @@ const AdminExtracciones: React.FC = () => {
                       <td className="p-4 text-sm text-gray-600">{extraccion.usuario_email}</td>
                       <td className="p-4 text-sm text-gray-600">{usuarioInfo?.movil || '-'}</td>
                       <td className="p-4 text-sm text-gray-600 font-mono">{usuarioInfo?.tarjeta_bancaria || '-'}</td>
-                      <td className="p-4 text-sm font-bold text-gray-900">{montoNum.toFixed(2)} CUP</td>
+                      <td className="p-4 text-sm font-bold text-gray-900">{formatMonto(montoNum)} CUP</td>
                       <td className="p-4 text-sm text-gray-600">{extraccion.estado}</td>
                       <td className="p-4 text-sm text-gray-600">{formatFecha(extraccion.fecha)}</td>
                       {filter === 'pendiente' && (
@@ -191,7 +192,7 @@ const AdminExtracciones: React.FC = () => {
                       <p className="font-semibold text-gray-900">#{extraccion.id} - {extraccion.usuario_email}</p>
                       <p className="text-sm text-gray-500">{extraccion.estado}</p>
                     </div>
-                    <span className="text-lg font-bold text-indigo-500">{montoNum.toFixed(2)} CUP</span>
+                    <span className="text-lg font-bold text-indigo-500">{formatMonto(montoNum)} CUP</span>
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     <div>

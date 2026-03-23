@@ -3,6 +3,7 @@ import { useAuth } from '../../context/auth-context';
 import { useToast } from '../../context/ToastContext';
 import { lotteryService, apuestaService } from '../../services/api';
 import { Wallet, Dices, Plus, X, CheckCircle2, Lock, Clock, ChevronRight, Gift, Minus } from 'lucide-react';
+import { formatMonto } from '../../utils/format';
 
 interface Loteria {
   id: number;
@@ -183,7 +184,7 @@ const Betting: React.FC = () => {
           <h1 className="text-xl font-bold text-gray-900">Apostar</h1>
           <div className="bg-indigo-500 text-white px-4 py-2 rounded-full flex items-center gap-2 text-sm font-semibold shadow-md">
             <Wallet className="w-4 h-4" />
-            {user.saldo_principal.toFixed(2)} CUP
+            {formatMonto(user.saldo_principal)} CUP
           </div>
         </div>
       </div>
@@ -448,7 +449,7 @@ const Betting: React.FC = () => {
             ) : (
               <>
                 <Dices className="w-5 h-5" />
-                Apostar {montoTotal > 0 ? `${montoTotal.toFixed(2)} CUP` : ''}
+                Apostar {montoTotal > 0 ? `${formatMonto(montoTotal)} CUP` : ''}
                 <ChevronRight className="w-5 h-5" />
               </>
             )}

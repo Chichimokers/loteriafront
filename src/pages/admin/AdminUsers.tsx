@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { usuarioService } from '../../services/api';
 import { RefreshCw, Users, Smartphone } from 'lucide-react';
+import { formatMonto } from '../../utils/format';
 
 interface Usuario {
   id: number;
@@ -38,7 +39,7 @@ const AdminUsers: React.FC = () => {
 
   const getSaldo = (saldo: number | string) => {
     const num = typeof saldo === 'string' ? parseFloat(saldo) : saldo;
-    return num.toFixed(2);
+    return formatMonto(num);
   };
 
   const formatFecha = (fecha: string) => {
@@ -121,7 +122,7 @@ const AdminUsers: React.FC = () => {
         <div className="bg-white p-4 rounded-xl shadow-sm">
           <p className="text-sm text-gray-500">Saldo Total</p>
           <p className="text-2xl font-bold text-indigo-500">
-            {usuarios.reduce((acc, u) => acc + (typeof u.saldo_principal === 'number' ? u.saldo_principal : parseFloat(u.saldo_principal) || 0), 0).toFixed(2)} CUP
+            {formatMonto(usuarios.reduce((acc, u) => acc + (typeof u.saldo_principal === 'number' ? u.saldo_principal : parseFloat(u.saldo_principal) || 0), 0))} CUP
           </p>
         </div>
       </div>

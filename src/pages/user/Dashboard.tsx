@@ -3,6 +3,7 @@ import { useAuth } from '../../context/auth-context';
 import { useToast } from '../../context/ToastContext';
 import { tarjetaService, acreditacionService, extraccionService } from '../../services/api';
 import { Wallet, CreditCard, Target, BarChart3, Dices, User, Smartphone, X, Phone } from 'lucide-react';
+import { formatMonto } from '../../utils/format';
 
 interface Tarjeta {
   id: number;
@@ -152,7 +153,7 @@ const Dashboard: React.FC = () => {
           <Wallet className="w-5 h-5" />
           <span className="text-white/80 text-sm font-medium">Saldo Principal</span>
         </div>
-        <div className="text-4xl font-bold mb-4">{user.saldo_principal.toFixed(2)} CUP</div>
+        <div className="text-4xl font-bold mb-4">{formatMonto(user.saldo_principal)} CUP</div>
         <div className="flex gap-3">
           <button
             onClick={openAcreditar}
@@ -169,7 +170,7 @@ const Dashboard: React.FC = () => {
           <CreditCard className="w-5 h-5" />
           <span className="text-white/80 text-sm font-medium">Disponible para extraer</span>
         </div>
-        <div className="text-3xl font-bold mb-4">{user.saldo_extraccion.toFixed(2)} CUP</div>
+        <div className="text-3xl font-bold mb-4">{formatMonto(user.saldo_extraccion)} CUP</div>
         <button
           onClick={openExtraer}
           className="w-full bg-white text-green-600 font-semibold py-3 px-4 rounded-xl hover:bg-green-50 transition-colors"
@@ -289,7 +290,7 @@ const Dashboard: React.FC = () => {
             <div className="p-4">
               <div className="bg-indigo-50 p-4 rounded-xl flex justify-between items-center mb-4">
                 <span className="text-gray-600">Saldo disponible:</span>
-                <span className="text-xl font-bold text-indigo-600">{user.saldo_principal.toFixed(2)} CUP</span>
+                <span className="text-xl font-bold text-indigo-600">{formatMonto(user.saldo_principal)} CUP</span>
               </div>
 
               <form onSubmit={handleExtraer} className="space-y-3">

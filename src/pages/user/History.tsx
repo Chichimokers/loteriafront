@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { apuestaService, lotteryService } from '../../services/api';
 import ResultadosHoy from './ResultadosHoy';
 import { Dices, RefreshCw, Clock, Timer, Frown, PartyPopper } from 'lucide-react';
+import { formatMonto } from '../../utils/format';
 
 interface Apuesta {
   id: number;
@@ -74,10 +75,6 @@ const History: React.FC = () => {
     if (val === undefined || val === null) return 0;
     if (typeof val === 'string') return parseFloat(val) || 0;
     return val;
-  };
-
-  const formatMonto = (val: number | string | undefined | null) => {
-    return getNum(val).toFixed(2);
   };
 
   const formatFecha = (fecha: string) => {

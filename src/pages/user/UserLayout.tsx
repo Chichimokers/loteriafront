@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../../context/auth-context';
 import { Dices, Wallet, LogOut, Menu, X } from 'lucide-react';
+import { formatMonto } from '../../utils/format';
 
 const UserLayout: React.FC = () => {
   const { user, logout } = useAuth();
@@ -68,7 +69,7 @@ const UserLayout: React.FC = () => {
               <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full flex items-center gap-2">
                 <Wallet className="w-4 h-4" />
                 <span className="text-sm font-medium">
-                  {user.saldo_principal.toFixed(2)} CUP
+{formatMonto(user.saldo_principal)} CUP
                 </span>
               </div>
               <button 
@@ -130,7 +131,7 @@ const UserLayout: React.FC = () => {
                 <div className="bg-white/20 px-4 py-3 rounded-xl mb-3 flex items-center gap-2">
                   <Wallet className="w-4 h-4" />
                   <span className="text-sm font-medium">
-                    Saldo: {user.saldo_principal.toFixed(2)} CUP
+                    Saldo: {formatMonto(user.saldo_principal)} CUP
                   </span>
                 </div>
                 <button 
