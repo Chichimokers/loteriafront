@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useToast } from '../../context/ToastContext';
 import { acreditacionService } from '../../services/api';
-import { RefreshCw, Wallet, CreditCard, MessageSquare, Hash, Calendar, Check, X as XIcon } from 'lucide-react';
+import { RefreshCw, Wallet, Check, X as XIcon } from 'lucide-react';
 import { formatMonto } from '../../utils/format';
 
 interface Acreditacion {
@@ -119,68 +119,55 @@ const AdminAcreditaciones: React.FC = () => {
           <p className="mt-3 text-gray-500 font-medium">No hay acreditaciones</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {acreditaciones.map((acreditacion) => {
             const montoNum = typeof acreditacion.monto === 'string' ? parseFloat(acreditacion.monto) : acreditacion.monto;
             return (
-              <div key={acreditacion.id} className="bg-white rounded-2xl shadow-sm overflow-hidden">
-                {/* Header con monto destacado */}
-                <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-indigo-500 to-indigo-600">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-white/70">#{acreditacion.id}</span>
-                    <span className="text-sm font-semibold text-white truncate max-w-[180px]">
-                      {acreditacion.usuario_email}
-                    </span>
-                  </div>
-                  <span className="text-lg font-bold text-white">{formatMonto(montoNum)} CUP</span>
+              <div key={acreditacion.id} className="bg-white rounded-2xl shadow-sm p-5 space-y-4">
+                {/* Email */}
+                <p className="text-lg font-bold text-indigo-600">{acreditacion.usuario_email}</p>
+
+                {/* Monto card */}
+                <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-6 text-center text-white shadow-lg">
+                  <p className="text-sm opacity-80 mb-1">Monto</p>
+                  <p className="text-4xl font-bold">{formatMonto(montoNum)} CUP</p>
                 </div>
 
-                {/* Info */}
-                <div className="p-4 space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="flex items-start gap-2">
-                      <CreditCard className="w-4 h-4 text-indigo-400 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">Tarjeta</p>
-                        <p className="text-sm font-mono font-medium text-gray-900">{formatTarjeta(acreditacion.tarjeta_numero)}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <Hash className="w-4 h-4 text-indigo-400 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">ID Transferencia</p>
-                        <p className="text-sm font-mono font-medium text-gray-900">{acreditacion.id_transferencia || '-'}</p>
-                      </div>
-                    </div>
+                {/* Info fields */}
+                <div className="space-y-3 pt-2">
+                  <div className="flex">
+                    <span className="text-sm font-semibold text-gray-500 w-32 flex-shrink-0">Tarjeta:</span>
+                    <span className="text-sm font-mono font-medium text-gray-900">{formatTarjeta(acreditacion.tarjeta_numero)}</span>
                   </div>
-                  <div className="flex items-start gap-2">
-                    <MessageSquare className="w-4 h-4 text-indigo-400 mt-0.5 flex-shrink-0" />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">SMS Confirmación</p>
-                      <p className="text-sm text-gray-900 break-all">{acreditacion.sms_confirmacion || '-'}</p>
-                    </div>
+                  <div className="flex">
+                    <span className="text-sm font-semibold text-gray-500 w-32 flex-shrink-0">ID Transferencia:</span>
+                    <span className="text-sm font-mono font-medium text-gray-900">{acreditacion.id_transferencia || '-'}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-gray-400">
-                    <Calendar className="w-3.5 h-3.5" />
-                    <span>{formatFecha(acreditacion.fecha)}</span>
+                  <div className="flex">
+                    <span className="text-sm font-semibold text-gray-500 w-32 flex-shrink-0">SMS:</span>
+                    <span className="text-sm text-gray-900 break-all leading-relaxed">{acreditacion.sms_confirmacion || '-'}</span>
+                  </div>
+                  <div className="flex">
+                    <span className="text-sm font-semibold text-gray-500 w-32 flex-shrink-0">Fecha:</span>
+                    <span className="text-sm text-gray-600">{formatFecha(acreditacion.fecha)}</span>
                   </div>
                 </div>
 
                 {/* Acciones */}
                 {filter === 'pendiente' && (
-                  <div className="flex gap-2 px-4 pb-4">
+                  <div className="flex gap-3 pt-2">
                     <button
                       onClick={() => handleApprove(acreditacion.id)}
-                      className="flex-1 py-3 bg-green-500 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+                      className="flex-1 py-3.5 bg-green-500 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-md"
                     >
-                      <Check className="w-4 h-4" />
+                      <Check className="w-5 h-5" />
                       Aprobar
                     </button>
                     <button
                       onClick={() => handleReject(acreditacion.id)}
-                      className="flex-1 py-3 bg-red-500 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+                      className="flex-1 py-3.5 bg-red-500 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-md"
                     >
-                      <XIcon className="w-4 h-4" />
+                      <XIcon className="w-5 h-5" />
                       Rechazar
                     </button>
                   </div>
