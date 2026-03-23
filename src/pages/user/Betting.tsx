@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/auth-context';
 import { useToast } from '../../context/ToastContext';
 import { lotteryService, apuestaService } from '../../services/api';
-import { Wallet, Dices, Plus, X, CheckCircle2, Lock, Clock } from 'lucide-react';
+import { Wallet, Dices, Plus, X, CheckCircle2, Lock, Clock, ChevronRight, Gift, Minus } from 'lucide-react';
 
 interface Loteria {
   id: number;
@@ -63,7 +63,7 @@ const Betting: React.FC = () => {
 
   const loadData = async () => {
     try {
-      const [loteriasData, tiradasData, modalidadesData] = await Promise.all([
+      const [loteriasData, , modalidadesData] = await Promise.all([
         lotteryService.getLoterias(),
         lotteryService.getTiradas(),
         lotteryService.getModalidades(),
@@ -73,11 +73,6 @@ const Betting: React.FC = () => {
         ? loteriasData
         : (loteriasData as { results?: Loteria[] }).results || [];
       setLoterias(loteriasArr.filter((l: Loteria) => l.activa));
-
-      const tiradasArr = Array.isArray(tiradasData)
-        ? tiradasData
-        : (tiradasData as { results?: Tirada[] }).results || [];
-      setTiradas(tiradasArr);
 
       const modalidadesArr = Array.isArray(modalidadesData)
         ? modalidadesData
@@ -168,77 +163,87 @@ const Betting: React.FC = () => {
     return hora.substring(0, 5);
   };
 
+  const loteriaSeleccionada = loterias.find(l => l.id === selectedLoteria);
+  const tiradaSeleccionada = tiradas.find(t => t.id === selectedTirada);
+  const modalidadSeleccionada = modalidades.find(m => m.id === selectedModalidad);
+
   if (!user || typeof user.saldo_principal !== 'number') {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Realizar Apuesta</h1>
-        <div className="bg-indigo-50 px-4 py-2 rounded-full flex items-center gap-2">
-          <Wallet className="w-4 h-4 text-indigo-500" />
-          <span className="text-sm font-medium text-indigo-600">
+    <div className="pb-32">
+      {/* Header sticky con saldo */}
+      <div className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-gray-100 px-4 py-3">
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-bold text-gray-900">Apostar</h1>
+          <div className="bg-indigo-500 text-white px-4 py-2 rounded-full flex items-center gap-2 text-sm font-semibold shadow-md">
+            <Wallet className="w-4 h-4" />
             {user.saldo_principal.toFixed(2)} CUP
-          </span>
+          </div>
         </div>
       </div>
 
-      <form onSubmit={handleApostar} className="space-y-6">
-
-        {/* Step 1: Loterías */}
-        <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center text-white text-sm font-bold">1</div>
-            <h2 className="text-lg font-bold text-gray-900">Lotería</h2>
+      <form onSubmit={handleApostar}>
+        {/* Step 1: Loterías - Scroll horizontal */}
+        <div className="px-4 pt-4">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-6 h-6 bg-indigo-500 rounded-full flex items-center justify-center text-white text-xs font-bold">1</div>
+            <h2 className="text-base font-bold text-gray-900">Elige tu Lotería</h2>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            {loterias.map((loteria) => (
-              <button
-                key={loteria.id}
-                type="button"
-                onClick={() => {
-                  setSelectedLoteria(loteria.id);
-                  setSelectedTirada(null);
-                  setSelectedModalidad(null);
-                }}
-                className={`relative p-3 rounded-xl border-2 transition-all text-center ${
-                  selectedLoteria === loteria.id
-                    ? 'border-indigo-500 bg-indigo-50 shadow-md'
-                    : 'border-gray-200 hover:border-indigo-300 hover:bg-gray-50'
-                }`}
-              >
-                {loteria.foto ? (
-                  <img src={loteria.foto} alt={loteria.nombre} className="w-12 h-12 rounded-lg object-cover mx-auto mb-2" />
-                ) : (
-                  <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center mx-auto mb-2 text-white font-bold">
-                    {loteria.nombre.charAt(0)}
-                  </div>
-                )}
-                <p className="text-sm font-semibold text-gray-900 truncate">{loteria.nombre}</p>
-                {selectedLoteria === loteria.id && (
-                  <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-indigo-500 rounded-full flex items-center justify-center">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-white" />
-                  </div>
-                )}
-              </button>
-            ))}
+          <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide" style={{ scrollbarWidth: 'none' }}>
+            {loterias.map((loteria) => {
+              const isSelected = selectedLoteria === loteria.id;
+              return (
+                <button
+                  key={loteria.id}
+                  type="button"
+                  onClick={() => {
+                    setSelectedLoteria(loteria.id);
+                    setSelectedTirada(null);
+                    setSelectedModalidad(null);
+                  }}
+                  className={`flex-shrink-0 w-24 p-3 rounded-2xl border-2 transition-all text-center ${
+                    isSelected
+                      ? 'border-indigo-500 bg-indigo-50 shadow-lg scale-105'
+                      : 'border-gray-200 bg-white'
+                  }`}
+                >
+                  {loteria.foto ? (
+                    <img src={loteria.foto} alt={loteria.nombre} className="w-14 h-14 rounded-xl object-cover mx-auto mb-2" />
+                  ) : (
+                    <div className={`w-14 h-14 rounded-xl flex items-center justify-center mx-auto mb-2 text-white text-xl font-bold ${
+                      isSelected ? 'bg-indigo-500' : 'bg-gradient-to-br from-indigo-400 to-purple-500'
+                    }`}>
+                      {loteria.nombre.charAt(0)}
+                    </div>
+                  )}
+                  <p className={`text-xs font-bold truncate ${isSelected ? 'text-indigo-700' : 'text-gray-700'}`}>
+                    {loteria.nombre}
+                  </p>
+                  {isSelected && (
+                    <div className="w-5 h-5 bg-indigo-500 rounded-full flex items-center justify-center mx-auto mt-1">
+                      <CheckCircle2 className="w-3 h-3 text-white" />
+                    </div>
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* Step 2: Tiradas */}
+        {/* Step 2: Horarios */}
         {selectedLoteria && tiradas.length > 0 && (
-          <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm animate-fade-in">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center text-white text-sm font-bold">2</div>
-              <h2 className="text-lg font-bold text-gray-900">Horario</h2>
+          <div className="px-4 pt-5 animate-fade-in">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-6 h-6 bg-indigo-500 rounded-full flex items-center justify-center text-white text-xs font-bold">2</div>
+              <h2 className="text-base font-bold text-gray-900">Horario de <span className="text-indigo-600">{loteriaSeleccionada?.nombre}</span></h2>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
               {tiradas.map((tirada) => {
                 const cerrada = tirada.resultado_hoy !== null;
                 const isSelected = selectedTirada === tirada.id;
@@ -250,30 +255,26 @@ const Betting: React.FC = () => {
                     onClick={() => {
                       if (!cerrada) setSelectedTirada(tirada.id);
                     }}
-                    className={`relative p-4 rounded-xl border-2 transition-all text-center ${
+                    className={`relative p-3 rounded-xl border-2 transition-all ${
                       cerrada
-                        ? 'border-gray-200 bg-gray-100 opacity-60 cursor-not-allowed'
+                        ? 'border-gray-200 bg-gray-50 cursor-not-allowed'
                         : isSelected
                           ? 'border-indigo-500 bg-indigo-50 shadow-md'
-                          : 'border-gray-200 hover:border-indigo-300 hover:bg-gray-50 cursor-pointer'
+                          : 'border-gray-200 bg-white active:scale-95'
                     }`}
                   >
-                    <Clock className={`w-6 h-6 mx-auto mb-1 ${cerrada ? 'text-gray-400' : 'text-indigo-500'}`} />
-                    <p className={`text-lg font-bold ${cerrada ? 'text-gray-400' : 'text-gray-900'}`}>
+                    <p className={`text-2xl font-bold ${cerrada ? 'text-gray-300' : isSelected ? 'text-indigo-600' : 'text-gray-900'}`}>
                       {formatHora(tirada.hora)}
                     </p>
                     {cerrada ? (
                       <div className="flex items-center justify-center gap-1 mt-1">
                         <Lock className="w-3 h-3 text-gray-400" />
-                        <span className="text-xs text-gray-400 font-medium">Cerrada</span>
+                        <span className="text-[10px] text-gray-400 font-medium">Cerrada</span>
                       </div>
                     ) : (
-                      <p className="text-xs text-green-600 font-medium mt-1">Abierta</p>
-                    )}
-                    {isSelected && !cerrada && (
-                      <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-indigo-500 rounded-full flex items-center justify-center">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-white" />
-                      </div>
+                      <p className={`text-[10px] font-bold mt-1 ${isSelected ? 'text-indigo-500' : 'text-green-500'}`}>
+                        {isSelected ? '✓ Seleccionada' : 'Abierta'}
+                      </p>
                     )}
                   </button>
                 );
@@ -282,14 +283,14 @@ const Betting: React.FC = () => {
           </div>
         )}
 
-        {/* Step 3: Modalidades en Cards */}
+        {/* Step 3: Modalidades */}
         {selectedTirada && (
-          <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm animate-fade-in">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center text-white text-sm font-bold">3</div>
-              <h2 className="text-lg font-bold text-gray-900">Modalidad</h2>
+          <div className="px-4 pt-5 animate-fade-in">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-6 h-6 bg-indigo-500 rounded-full flex items-center justify-center text-white text-xs font-bold">3</div>
+              <h2 className="text-base font-bold text-gray-900">Modalidad</h2>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4" style={{ scrollbarWidth: 'none' }}>
               {modalidades.map((modalidad) => {
                 const isSelected = selectedModalidad === modalidad.id;
                 return (
@@ -297,21 +298,24 @@ const Betting: React.FC = () => {
                     key={modalidad.id}
                     type="button"
                     onClick={() => setSelectedModalidad(modalidad.id)}
-                    className={`relative p-4 rounded-xl border-2 transition-all text-left ${
+                    className={`flex-shrink-0 min-w-[140px] p-3 rounded-xl border-2 transition-all text-left ${
                       isSelected
                         ? 'border-indigo-500 bg-indigo-50 shadow-md'
-                        : 'border-gray-200 hover:border-indigo-300 hover:bg-gray-50'
+                        : 'border-gray-200 bg-white'
                     }`}
                   >
-                    <p className={`font-bold ${isSelected ? 'text-indigo-700' : 'text-gray-900'}`}>
-                      {modalidad.nombre}
-                    </p>
-                    <p className={`text-sm mt-1 ${isSelected ? 'text-indigo-600' : 'text-gray-500'}`}>
-                      Premio: <span className="font-semibold">{modalidad.premio_por_peso}x</span> el monto
+                    <div className="flex items-center gap-2 mb-1">
+                      <Gift className={`w-4 h-4 ${isSelected ? 'text-indigo-500' : 'text-gray-400'}`} />
+                      <p className={`text-sm font-bold ${isSelected ? 'text-indigo-700' : 'text-gray-900'}`}>
+                        {modalidad.nombre}
+                      </p>
+                    </div>
+                    <p className={`text-xs ${isSelected ? 'text-indigo-600' : 'text-gray-500'}`}>
+                      Ganas <span className="font-bold">{modalidad.premio_por_peso}x</span> tu apuesta
                     </p>
                     {isSelected && (
-                      <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-indigo-500 rounded-full flex items-center justify-center">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                      <div className="w-5 h-5 bg-indigo-500 rounded-full flex items-center justify-center mt-2">
+                        <CheckCircle2 className="w-3 h-3 text-white" />
                       </div>
                     )}
                   </button>
@@ -323,88 +327,133 @@ const Betting: React.FC = () => {
 
         {/* Step 4: Números */}
         {selectedModalidad && (
-          <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm animate-fade-in">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center text-white text-sm font-bold">4</div>
-              <h2 className="text-lg font-bold text-gray-900">Números</h2>
+          <div className="px-4 pt-5 animate-fade-in">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-6 h-6 bg-indigo-500 rounded-full flex items-center justify-center text-white text-xs font-bold">4</div>
+              <h2 className="text-base font-bold text-gray-900">Tus Números</h2>
+              {numeros.length > 0 && (
+                <span className="ml-auto text-xs text-gray-500">{numeros.length}/10</span>
+              )}
             </div>
 
-            <div className="flex gap-3 mb-4">
+            {/* Input grande para móvil */}
+            <div className="flex gap-2 mb-4">
               <input
                 type="text"
                 value={numeroInput}
                 onChange={(e) => setNumeroInput(e.target.value.replace(/\D/g, '').slice(0, 3))}
                 placeholder="000"
                 maxLength={3}
-                className="flex-1 p-3 border border-gray-300 rounded-xl text-center text-2xl font-bold tracking-widest focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                inputMode="numeric"
+                className="flex-1 p-4 bg-gray-50 border-2 border-gray-200 rounded-2xl text-center text-3xl font-bold tracking-[0.3em] focus:outline-none focus:border-indigo-500 focus:bg-white transition-all"
               />
               <button
                 type="button"
                 onClick={agregarNumero}
                 disabled={numeroInput.length !== 3}
-                className="px-5 py-3 bg-indigo-500 text-white rounded-xl font-semibold flex items-center gap-2 hover:bg-indigo-600 transition-colors disabled:opacity-50"
+                className="w-14 h-14 bg-indigo-500 text-white rounded-2xl flex items-center justify-center active:scale-95 transition-transform disabled:opacity-30 shadow-md"
               >
-                <Plus className="w-5 h-5" />
-                <span className="hidden sm:inline">Agregar</span>
+                <Plus className="w-7 h-7" />
               </button>
             </div>
 
+            {/* Bolas de números */}
             {numeros.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-4">
                 {numeros.map((num) => (
                   <div key={num} className="relative group">
-                    <div className="w-14 h-14 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center text-white text-xl font-bold shadow-md">
+                    <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-lg active:scale-95 transition-transform">
                       {num}
                     </div>
                     <button
                       type="button"
                       onClick={() => eliminarNumero(num)}
-                      className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white shadow-md active:scale-90 transition-transform"
                     >
-                      <X className="w-3 h-3" />
+                      <X className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 ))}
               </div>
             )}
 
-            {/* Monto */}
-            <div className="bg-gray-50 rounded-xl p-4 mb-4">
-              <div className="flex items-center justify-between flex-wrap gap-3">
-                <div>
-                  <label className="text-sm text-gray-500 block mb-1">Monto por número</label>
+            {/* Monto por número */}
+            <div className="bg-gray-50 rounded-2xl p-4 mb-4">
+              <p className="text-sm text-gray-500 mb-2">Monto por número</p>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setMontoPorNumero(Math.max(1, montoPorNumero - 5))}
+                  className="w-12 h-12 bg-white border-2 border-gray-200 rounded-xl flex items-center justify-center text-gray-600 active:scale-95 transition-transform"
+                >
+                  <Minus className="w-5 h-5" />
+                </button>
+                <div className="flex-1 text-center">
                   <input
                     type="number"
                     min="1"
                     value={montoPorNumero}
-                    onChange={(e) => setMontoPorNumero(Number(e.target.value))}
-                    className="w-28 p-2 border border-gray-300 rounded-lg text-center font-semibold focus:outline-none focus:border-indigo-500"
+                    onChange={(e) => setMontoPorNumero(Math.max(1, Number(e.target.value)))}
+                    className="w-full text-center text-2xl font-bold bg-transparent border-none focus:outline-none"
                   />
+                  <p className="text-xs text-gray-400">CUP</p>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm text-gray-500">Total</p>
-                  <p className="text-3xl font-bold text-gray-900">{montoTotal.toFixed(2)} <span className="text-lg text-gray-500">CUP</span></p>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setMontoPorNumero(montoPorNumero + 5)}
+                  className="w-12 h-12 bg-white border-2 border-gray-200 rounded-xl flex items-center justify-center text-gray-600 active:scale-95 transition-transform"
+                >
+                  <Plus className="w-5 h-5" />
+                </button>
               </div>
             </div>
-
-            {/* Botón Apostar */}
-            <button
-              type="submit"
-              disabled={loading || numeros.length === 0}
-              className="w-full py-4 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-xl font-bold text-lg flex items-center justify-center gap-3 hover:from-indigo-600 hover:to-indigo-700 transition-all disabled:opacity-50 shadow-lg"
-            >
-              {loading ? (
-                <div className="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <>
-                  <Dices className="w-6 h-6" />
-                  APOSTAR {montoTotal.toFixed(2)} CUP
-                </>
-              )}
-            </button>
           </div>
         )}
+
+        {/* Barra inferior fija con resumen y botón */}
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 px-4 py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
+          {/* Resumen de selección */}
+          <div className="flex items-center gap-2 mb-3 overflow-x-auto text-xs" style={{ scrollbarWidth: 'none' }}>
+            {loteriaSeleccionada && (
+              <span className="flex-shrink-0 bg-indigo-50 text-indigo-700 px-2 py-1 rounded-full font-medium">
+                {loteriaSeleccionada.nombre}
+              </span>
+            )}
+            {tiradaSeleccionada && (
+              <span className="flex-shrink-0 bg-blue-50 text-blue-700 px-2 py-1 rounded-full font-medium flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                {formatHora(tiradaSeleccionada.hora)}
+              </span>
+            )}
+            {modalidadSeleccionada && (
+              <span className="flex-shrink-0 bg-purple-50 text-purple-700 px-2 py-1 rounded-full font-medium">
+                {modalidadSeleccionada.nombre}
+              </span>
+            )}
+            {numeros.length > 0 && (
+              <span className="flex-shrink-0 bg-amber-50 text-amber-700 px-2 py-1 rounded-full font-medium">
+                {numeros.length} Nº
+              </span>
+            )}
+          </div>
+
+          {/* Botón apostar */}
+          <button
+            type="submit"
+            disabled={loading || numeros.length === 0 || !selectedTirada || !selectedModalidad}
+            className="w-full py-4 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-2xl font-bold text-base flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-40 disabled:active:scale-100 shadow-lg"
+          >
+            {loading ? (
+              <div className="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <>
+                <Dices className="w-5 h-5" />
+                Apostar {montoTotal > 0 ? `${montoTotal.toFixed(2)} CUP` : ''}
+                <ChevronRight className="w-5 h-5" />
+              </>
+            )}
+          </button>
+        </div>
       </form>
     </div>
   );
