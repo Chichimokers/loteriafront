@@ -20,7 +20,7 @@ const Dashboard: React.FC = () => {
   const [error, setError] = useState('');
 
   const [acreditacionData, setAcreditacionData] = useState({
-    tarjeta_id: 0,
+    tarjeta: 0,
     monto: 0,
     sms_confirmacion: '',
     id_transferencia: '',
@@ -54,7 +54,7 @@ const Dashboard: React.FC = () => {
       await acreditacionService.createAcreditacion(acreditacionData);
       setMessage('Solicitud de acreditación enviada. Pendiente de aprobación.');
       setShowAcreditarModal(false);
-      setAcreditacionData({ tarjeta_id: 0, monto: 0, sms_confirmacion: '', id_transferencia: '' });
+      setAcreditacionData({ tarjeta: 0, monto: 0, sms_confirmacion: '', id_transferencia: '' });
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Error al enviar solicitud';
       setError(errorMessage);
@@ -127,8 +127,8 @@ const Dashboard: React.FC = () => {
               <div className="form-group">
                 <label>Tarjeta</label>
                 <select
-                  value={acreditacionData.tarjeta_id}
-                  onChange={(e) => setAcreditacionData({ ...acreditacionData, tarjeta_id: Number(e.target.value) })}
+                  value={acreditacionData.tarjeta}
+                  onChange={(e) => setAcreditacionData({ ...acreditacionData, tarjeta: Number(e.target.value) })}
                   required
                 >
                   <option value={0}>Seleccionar tarjeta</option>

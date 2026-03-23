@@ -2,7 +2,6 @@ import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://inventory.cloudns.be/api/v1';
 
-
 const api = axios.create({
   baseURL: API_URL,
   headers: {
@@ -29,7 +28,7 @@ api.interceptors.response.use(
       try {
         const refreshToken = localStorage.getItem('refresh_token');
         if (refreshToken) {
-          const response = await axios.post(`${API_URL}/token/refresh/`, {
+          const response = await axios.post(`${API_URL}/usuarios/token/refresh/`, {
             refresh: refreshToken,
           });
           
@@ -59,8 +58,8 @@ export const authService = {
   },
   
   login: async (data: { email: string; password: string }) => {
-    const response = await api.post('/token/', data);
-    const { access, refresh } = response.data as { access: string; refresh: string };
+    const response = await api.post('/usuarios/token/', data);
+    const { access, refresh } = response.data as { access: string; refresh: string; user_id: number; email: string };
     localStorage.setItem('access_token', access);
     localStorage.setItem('refresh_token', refresh);
     return response.data;
@@ -79,80 +78,80 @@ export const authService = {
 
 export const lotteryService = {
   getLoterias: async () => {
-    const response = await api.get('/loterias/');
+    const response = await api.get('/loterias/loterias/');
     return response.data;
   },
   
   getTiradasActivas: async () => {
-    const response = await api.get('/tiradas/activas/');
+    const response = await api.get('/loterias/tiradas/activas/');
     return response.data;
   },
   
   getTiradas: async () => {
-    const response = await api.get('/tiradas/');
+    const response = await api.get('/loterias/tiradas/');
     return response.data;
   },
   
   getModalidades: async () => {
-    const response = await api.get('/modalidades/');
+    const response = await api.get('/loterias/modalidades/');
     return response.data;
   },
 };
 
 export const apuestaService = {
-  createApuesta: async (data: { loteria_id: number; modalidad_id: number; tirada_id: number; numeros: string[]; monto_por_numero: number }) => {
+  createApuesta: async (data: { loteria: number; modalidad: number; tirada: number; numeros: string[]; monto_por_numero: number }) => {
     const response = await api.post('/apuestas/', data);
     return response.data;
   },
   
   getApuestas: async () => {
-    const response = await api.get('/apuestas/');
+    const response = await api.get('/apuestas/mis_apuestas/');
     return response.data;
   },
 };
 
 export const acreditacionService = {
-  createAcreditacion: async (data: { tarjeta_id: number; monto: number; sms_confirmacion: string; id_transferencia: string }) => {
-    const response = await api.post('/acreditaciones/', data);
+  createAcreditacion: async (data: { tarjeta: number; monto: number; sms_confirmacion: string; id_transferencia: string }) => {
+    const response = await api.post('/usuarios/acreditaciones/', data);
     return response.data;
   },
   
   getAcreditaciones: async (estado?: string) => {
     const params = estado ? { estado } : {};
-    const response = await api.get('/acreditaciones/', { params });
+    const response = await api.get('/usuarios/acreditaciones/', { params });
     return response.data;
   },
   
   approveAcreditacion: async (id: number) => {
-    const response = await api.patch(`/acreditaciones/${id}/aprobar/`);
+    const response = await api.patch(`/usuarios/acreditaciones/${id}/aprobar/`);
     return response.data;
   },
   
   rejectAcreditacion: async (id: number) => {
-    const response = await api.patch(`/acreditaciones/${id}/rechazar/`);
+    const response = await api.patch(`/usuarios/acreditaciones/${id}/rechazar/`);
     return response.data;
   },
 };
 
 export const extraccionService = {
   createExtraccion: async (data: { monto: number }) => {
-    const response = await api.post('/extracciones/', data);
+    const response = await api.post('/usuarios/extracciones/', data);
     return response.data;
   },
   
   getExtracciones: async (estado?: string) => {
     const params = estado ? { estado } : {};
-    const response = await api.get('/extracciones/', { params });
+    const response = await api.get('/usuarios/extracciones/', { params });
     return response.data;
   },
   
   approveExtraccion: async (id: number) => {
-    const response = await api.patch(`/extracciones/${id}/aprobar/`);
+    const response = await api.patch(`/usuarios/extracciones/${id}/aprobar/`);
     return response.data;
   },
   
   rejectExtraccion: async (id: number) => {
-    const response = await api.patch(`/extracciones/${id}/rechazar/`);
+    const response = await api.patch(`/usuarios/extracciones/${id}/rechazar/`);
     return response.data;
   },
 };
@@ -171,21 +170,21 @@ export const usuarioService = {
 
 export const tarjetaService = {
   getTarjetas: async () => {
-    const response = await api.get('/tarjetas/');
+    const response = await api.get('/usuarios/tarjetas/');
     return response.data;
   },
 };
 
 export const resultadoService = {
   createResultado: async (data: { tirada_id: number; pick_3: string; pick_4: string }) => {
-    const response = await api.post('/tiradas/resultados/', data);
+    const response = await api.post('/loterias/tiradas/resultados/', data);
     return response.data;
   },
 };
 
 export const modalidadService = {
   updateModalidad: async (id: number, data: { premio_por_peso: number }) => {
-    const response = await api.patch(`/modalidades/${id}/`, data);
+    const response = await api.patch(`/loterias/modalidades/${id}/`, data);
     return response.data;
   },
 };

@@ -129,9 +129,9 @@ const Betting: React.FC = () => {
 
     try {
       await apuestaService.createApuesta({
-        loteria_id: selectedLoteria,
-        modalidad_id: selectedModalidad,
-        tirada_id: selectedTirada,
+        loteria: selectedLoteria,
+        modalidad: selectedModalidad,
+        tirada: selectedTirada,
         numeros: numeros,
         monto_por_numero: montoPorNumero,
       });

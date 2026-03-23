@@ -46,7 +46,7 @@ const AdminTiradas: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await api.post('/tiradas/', formData);
+      await api.post('/loterias/tiradas/', { loteria: formData.loteria_id, hora: formData.hora, fecha: formData.fecha, activa: formData.activa });
       await loadData();
       setShowForm(false);
       setFormData({ loteria_id: 0, hora: '', fecha: '', activa: true });
@@ -57,7 +57,7 @@ const AdminTiradas: React.FC = () => {
 
   const handleToggleActiva = async (tirada: Tirada) => {
     try {
-      await api.patch(`/tiradas/${tirada.id}/`, { activa: !tirada.activa });
+      await api.patch(`/loterias/tiradas/${tirada.id}/`, { activa: !tirada.activa });
       await loadData();
     } catch (err) {
       console.error('Error toggling tirada:', err);
@@ -67,7 +67,7 @@ const AdminTiradas: React.FC = () => {
   const handleDelete = async (id: number) => {
     if (!confirm('¿Está seguro de eliminar esta tirada?')) return;
     try {
-      await api.delete(`/tiradas/${id}/`);
+      await api.delete(`/loterias/tiradas/${id}/`);
       await loadData();
     } catch (err) {
       console.error('Error deleting tirada:', err);

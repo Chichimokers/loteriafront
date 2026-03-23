@@ -35,9 +35,9 @@ const AdminLoterias: React.FC = () => {
     e.preventDefault();
     try {
       if (editingId) {
-        await api.patch(`/loterias/${editingId}/`, formData);
+        await api.patch(`/loterias/loterias/${editingId}/`, formData);
       } else {
-        await api.post('/loterias/', formData);
+        await api.post('/loterias/loterias/', formData);
       }
       await loadLoterias();
       setShowForm(false);
@@ -51,7 +51,7 @@ const AdminLoterias: React.FC = () => {
   const handleDelete = async (id: number) => {
     if (!confirm('¿Está seguro de eliminar esta lotería?')) return;
     try {
-      await api.delete(`/loterias/${id}/`);
+      await api.delete(`/loterias/loterias/${id}/`);
       await loadLoterias();
     } catch (err) {
       console.error('Error deleting loteria:', err);
