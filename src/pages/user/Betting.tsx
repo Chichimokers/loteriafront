@@ -50,6 +50,7 @@ const Betting: React.FC = () => {
     if (selectedLoteria) {
       loadTiradas();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedLoteria]);
 
   const loadData = async () => {

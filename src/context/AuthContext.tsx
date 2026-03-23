@@ -33,7 +33,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       const userData = await authService.getCurrentUser();
       setUser(userData as Usuario);
-    } catch (error) {
+    } catch {
       setUser(null);
     }
   };

@@ -11,7 +11,7 @@ const UserLayout: React.FC = () => {
     if (user) {
       refreshUser();
     }
-  }, []);
+  }, [user, refreshUser]);
 
   const handleLogout = () => {
     logout();

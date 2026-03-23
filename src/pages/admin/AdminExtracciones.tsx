@@ -17,6 +17,7 @@ const AdminExtracciones: React.FC = () => {
 
   useEffect(() => {
     loadExtracciones();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter]);
 
   const loadExtracciones = async () => {
