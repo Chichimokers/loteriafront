@@ -189,7 +189,6 @@ const AdminResultados: React.FC = () => {
               onChange={(e) => setFormData({ ...formData, pick_4: e.target.value.replace(/\D/g, '').slice(0, 4) })}
               placeholder="4 dígitos"
               maxLength={4}
-              maxLength={3}
               className="w-full p-3 border border-gray-200 rounded-lg"
             />
           </div>
