@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { adminService } from '../../services/api';
 import { RefreshCw, Trophy, Target, BarChart3 } from 'lucide-react';
-import { formatMonto } from '../../utils/format';
+import { formatMonto, formatHora } from '../../utils/format';
 
 interface Metricas {
   total_apostado: string;
@@ -106,7 +106,7 @@ const AdminDashboard: React.FC = () => {
               </div>
               <div>
                 <p className="text-sm text-gray-500">Top Tirada</p>
-                <p className="text-lg font-bold text-gray-900">{metricas.top_tirada.loteria} - {metricas.top_tirada.hora}</p>
+                <p className="text-lg font-bold text-gray-900">{metricas.top_tirada.loteria} - {formatHora(metricas.top_tirada.hora)}</p>
               </div>
             </div>
             <div className="flex items-center justify-between">

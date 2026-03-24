@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { lotteryService } from '../../services/api';
 import { Dices, Clock, RefreshCw, Timer } from 'lucide-react';
+import { formatHora } from '../../utils/format';
 
 interface ResultadoItem {
   id: number;
@@ -107,11 +108,6 @@ const ResultadosHoy: React.FC = () => {
       setLoading(false);
       setRefreshing(false);
     }
-  };
-
-  const formatHora = (hora: string) => {
-    if (!hora) return '-';
-    return hora.substring(0, 5);
   };
 
   if (loading) {
@@ -245,7 +241,7 @@ const ResultadosHoy: React.FC = () => {
                               )}
                               {pick4 && (
                                 <div>
-                                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Pick 3</span>
+                                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Pick 4</span>
                                   <div className="flex gap-2 mt-1">
                                     {pick4.split('').map((d, i) => (
                                       <div

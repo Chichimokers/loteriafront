@@ -239,7 +239,7 @@ const AdminApuestas: React.FC = () => {
                         <span className="font-medium">Pick 3: {apuesta.resultado.pick_3}</span>
                       )}
                       {apuesta.resultado.pick_4 && (
-                        <span className="font-medium">Pick 3: {apuesta.resultado.pick_4}</span>
+                        <span className="font-medium">Pick 4: {apuesta.resultado.pick_4}</span>
                       )}
                     </div>
                   </div>

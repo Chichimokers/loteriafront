@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { lotteryService, resultadoService } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { RefreshCw, Trophy, CheckCircle2 } from 'lucide-react';
+import { formatHora } from '../../utils/format';
 
 interface ResultadoHoy {
   pick_3: string;
@@ -97,11 +98,6 @@ const AdminResultados: React.FC = () => {
     return tiradas.find(t => t.id === formData.tirada_id);
   };
 
-  const formatHora = (hora: string | undefined | null) => {
-    if (!hora) return '-';
-    return String(hora).substring(0, 5);
-  };
-
   if (loading && tiradas.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -186,12 +182,13 @@ const AdminResultados: React.FC = () => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Pick 3</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Pick 4</label>
             <input
               type="text"
               value={formData.pick_4}
-              onChange={(e) => setFormData({ ...formData, pick_4: e.target.value.replace(/\D/g, '').slice(0, 3) })}
-              placeholder="3 dígitos"
+              onChange={(e) => setFormData({ ...formData, pick_4: e.target.value.replace(/\D/g, '').slice(0, 4) })}
+              placeholder="4 dígitos"
+              maxLength={4}
               maxLength={3}
               className="w-full p-3 border border-gray-200 rounded-lg"
             />
@@ -307,7 +304,7 @@ const AdminResultados: React.FC = () => {
                       )}
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500 mb-1">Pick 3</p>
+                      <p className="text-xs text-gray-500 mb-1">Pick 4</p>
                       {tirada.resultado_hoy ? (
                         <div className="flex gap-1">
                           {(tirada.resultado_hoy.pick_4 || '').split('').map((d, i) => (

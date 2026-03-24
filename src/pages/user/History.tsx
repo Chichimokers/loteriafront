@@ -187,7 +187,7 @@ const History: React.FC = () => {
                       )}
                       {apuesta.resultado.pick_4 && (
                         <div className="flex items-center gap-2">
-                          <span className="text-xs text-gray-500">Pick 3:</span>
+                          <span className="text-xs text-gray-500">Pick 4:</span>
                           <span className="font-bold text-gray-900">{apuesta.resultado.pick_4}</span>
                         </div>
                       )}

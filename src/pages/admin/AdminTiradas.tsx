@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { lotteryService } from '../../services/api';
 import api from '../../services/api';
 import { RefreshCw, Clock, Trash2, Pause, Play } from 'lucide-react';
+import { formatHora } from '../../utils/format';
 
 interface Tirada {
   id: number;
@@ -167,7 +168,7 @@ const AdminTiradas: React.FC = () => {
                   <tr key={tirada.id} className="hover:bg-gray-50">
                     <td className="p-4 text-sm text-gray-900">{tirada.id}</td>
                     <td className="p-4 text-sm text-gray-900">{tirada.loteria_nombre || tirada.loteria}</td>
-                    <td className="p-4 text-sm text-gray-600">{tirada.hora}</td>
+                    <td className="p-4 text-sm text-gray-600">{formatHora(tirada.hora)}</td>
                     <td className="p-4">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${tirada.activa ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                         {tirada.activa ? 'Activa' : 'Inactiva'}
@@ -203,7 +204,7 @@ const AdminTiradas: React.FC = () => {
                 <div className="flex justify-between items-center mb-3">
                   <div>
                     <p className="font-semibold text-gray-900">{tirada.loteria_nombre || tirada.loteria}</p>
-                    <p className="text-sm text-gray-500">ID: {tirada.id} • {tirada.hora}</p>
+                    <p className="text-sm text-gray-500">ID: {tirada.id} • {formatHora(tirada.hora)}</p>
                   </div>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${tirada.activa ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                     {tirada.activa ? 'Activa' : 'Inactiva'}

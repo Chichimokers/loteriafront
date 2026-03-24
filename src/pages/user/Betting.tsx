@@ -3,7 +3,7 @@ import { useAuth } from '../../context/auth-context';
 import { useToast } from '../../context/ToastContext';
 import { lotteryService, apuestaService } from '../../services/api';
 import { Wallet, Dices, Plus, X, CheckCircle2, Lock, Clock, ChevronRight, Gift, Minus } from 'lucide-react';
-import { formatMonto } from '../../utils/format';
+import { formatMonto, formatHora } from '../../utils/format';
 
 interface Loteria {
   id: number;
@@ -159,11 +159,6 @@ const Betting: React.FC = () => {
     }
   };
 
-  const formatHora = (hora: string) => {
-    if (!hora) return '-';
-    return hora.substring(0, 5);
-  };
-
   const loteriaSeleccionada = loterias.find(l => l.id === selectedLoteria);
   const tiradaSeleccionada = tiradas.find(t => t.id === selectedTirada);
   const modalidadSeleccionada = modalidades.find(m => m.id === selectedModalidad);
@@ -246,7 +241,8 @@ const Betting: React.FC = () => {
             </div>
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
               {tiradas.map((tirada) => {
-                const cerrada = tirada.resultado_hoy !== null;
+                const horaActual = new Date().toTimeString().substring(0, 8);
+                const cerrada = tirada.resultado_hoy !== null || tirada.hora < horaActual;
                 const isSelected = selectedTirada === tirada.id;
                 return (
                   <button
