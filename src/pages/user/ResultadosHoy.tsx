@@ -1,19 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { lotteryService } from '../../services/api';
 import { Dices, Clock, RefreshCw, Timer } from 'lucide-react';
-import { formatHora } from '../../utils/format';
 
-interface ResultadoItem {
+interface Tirada {
   id: number;
-  loteria: string;
-  hora: string;
-  resultado: { pick_3: string | null; pick_4: string | null } | null;
-}
-
-interface TiradaActiva {
-  id: number;
+  loteria: number;
   loteria_nombre: string;
   hora: string;
+  activa: boolean;
+  resultado_hoy: {
+    pick_3: string;
+    pick_4: string;
+    fecha: string;
+  } | null;
 }
 
 interface LoteriaInfo {
@@ -26,8 +25,7 @@ interface LoteriaInfo {
 interface GrupoLoteria {
   nombre: string;
   foto: string;
-  tiradas: ResultadoItem[];
-  tiradasActivas: string[];
+  tiradas: Tirada[];
 }
 
 const ResultadosHoy: React.FC = () => {
@@ -37,8 +35,7 @@ const ResultadosHoy: React.FC = () => {
 
   useEffect(() => {
     loadData();
-    const intervalId = setInterval(() => loadData(true), 5000);
-
+    const intervalId = setInterval(() => loadData(true), 15000);
     return () => clearInterval(intervalId);
   }, []);
 
@@ -47,58 +44,39 @@ const ResultadosHoy: React.FC = () => {
     else setLoading(true);
 
     try {
-      const [loteriasData, resultadosData, tiradasActivasData] = await Promise.all([
+      const [loteriasData, tiradasData] = await Promise.all([
         lotteryService.getLoterias(),
-        lotteryService.getResultadosHoy(),
-        lotteryService.getTiradasActivas(),
+        lotteryService.getTiradas(),
       ]);
 
-      const loteriasArr = Array.isArray(loteriasData)
+      const loteriasArr: LoteriaInfo[] = Array.isArray(loteriasData)
         ? loteriasData
         : (loteriasData as { results?: LoteriaInfo[] }).results || [];
 
-      const loteriasMap = new Map<string, string>();
-      loteriasArr.forEach((l: LoteriaInfo) => loteriasMap.set(l.nombre, l.foto || ''));
+      const loteriasMap = new Map<number, string>();
+      loteriasArr.forEach((l) => loteriasMap.set(l.id, l.foto || ''));
 
-      const resultadosArr = Array.isArray(resultadosData)
-        ? resultadosData
-        : (resultadosData as { results?: ResultadoItem[] }).results || [];
+      const tiradasArr: Tirada[] = Array.isArray(tiradasData)
+        ? tiradasData
+        : (tiradasData as { results?: Tirada[] }).results || [];
 
-      const tiradasActivasArr = Array.isArray(tiradasActivasData)
-        ? tiradasActivasData
-        : (tiradasActivasData as { results?: TiradaActiva[] }).results || [];
+      const tiradasActivas = tiradasArr.filter((t) => t.activa);
 
-      const tiradasActivasPorLoteria = new Map<string, string[]>();
-      tiradasActivasArr.forEach((t: TiradaActiva) => {
-        if (!tiradasActivasPorLoteria.has(t.loteria_nombre)) {
-          tiradasActivasPorLoteria.set(t.loteria_nombre, []);
+      const gruposMap = new Map<number, GrupoLoteria>();
+
+      tiradasActivas.forEach((t) => {
+        if (!gruposMap.has(t.loteria)) {
+          gruposMap.set(t.loteria, {
+            nombre: t.loteria_nombre,
+            foto: loteriasMap.get(t.loteria) || '',
+            tiradas: [],
+          });
         }
-        tiradasActivasPorLoteria.get(t.loteria_nombre)!.push(t.hora);
-      });
-
-      const gruposMap = new Map<string, GrupoLoteria>();
-
-      resultadosArr.forEach((r: ResultadoItem) => {
-        const foto = loteriasMap.get(r.loteria) || '';
-        const tiradasActivasHoras = tiradasActivasPorLoteria.get(r.loteria) || [];
-        if (!gruposMap.has(r.loteria)) {
-          gruposMap.set(r.loteria, { nombre: r.loteria, foto, tiradas: [], tiradasActivas: tiradasActivasHoras });
-        }
-        gruposMap.get(r.loteria)!.tiradas.push(r);
-      });
-
-      loteriasArr.forEach((l: LoteriaInfo) => {
-        if (!gruposMap.has(l.nombre) && l.activa) {
-          const tiradasActivasHoras = tiradasActivasPorLoteria.get(l.nombre) || [];
-          if (tiradasActivasHoras.length > 0) {
-            gruposMap.set(l.nombre, { nombre: l.nombre, foto: l.foto || '', tiradas: [], tiradasActivas: tiradasActivasHoras });
-          }
-        }
+        gruposMap.get(t.loteria)!.tiradas.push(t);
       });
 
       gruposMap.forEach((grupo) => {
         grupo.tiradas.sort((a, b) => a.hora.localeCompare(b.hora));
-        grupo.tiradasActivas.sort((a, b) => a.localeCompare(b));
       });
 
       setGrupos(Array.from(gruposMap.values()));
@@ -110,17 +88,14 @@ const ResultadosHoy: React.FC = () => {
     }
   };
 
+  const formatHora = (hora: string) => {
+    if (!hora) return '-';
+    return hora.substring(0, 5);
+  };
+
   if (loading) {
     return (
       <div className="bg-white rounded-2xl shadow-md p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-xl font-bold text-gray-900">Resultados de Hoy</h2>
-            <p className="text-sm text-gray-500 capitalize">
-              {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
-            </p>
-          </div>
-        </div>
         <div className="flex flex-col items-center justify-center py-12">
           <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-3"></div>
           <p className="text-gray-500 text-sm">Cargando resultados...</p>
@@ -142,7 +117,7 @@ const ResultadosHoy: React.FC = () => {
         <button
           onClick={() => loadData(true)}
           disabled={refreshing}
-          className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-600 transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-600 transition-colors disabled:opacity-50"
         >
           <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
           <span className="hidden sm:inline">{refreshing ? 'Actualizando...' : 'Actualizar'}</span>
@@ -160,7 +135,7 @@ const ResultadosHoy: React.FC = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {grupos.map((grupo) => {
-              const resultadosCount = grupo.tiradas.filter((t) => t.resultado).length;
+              const resultadosCount = grupo.tiradas.filter((t) => t.resultado_hoy !== null).length;
               return (
                 <div key={grupo.nombre} className="border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-shadow">
                   {/* Card Header */}
@@ -178,36 +153,33 @@ const ResultadosHoy: React.FC = () => {
                     )}
                     <div className="flex-1 min-w-0">
                       <h3 className="font-bold text-gray-900 truncate">{grupo.nombre}</h3>
-                      <div className="flex items-center gap-2">
-                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                          resultadosCount === grupo.tiradasActivas.length
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-amber-100 text-amber-700'
-                        }`}>
-                          {resultadosCount}/{grupo.tiradasActivas.length} resultados
-                        </span>
-                      </div>
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                        resultadosCount === grupo.tiradas.length
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-amber-100 text-amber-700'
+                      }`}>
+                        {resultadosCount}/{grupo.tiradas.length} resultados
+                      </span>
                     </div>
                   </div>
 
                   {/* Tiradas */}
                   <div className="divide-y divide-gray-100">
-                    {grupo.tiradasActivas.map((hora) => {
-                      const tirada = grupo.tiradas.find((t) => t.hora === hora);
-                      const tieneResultado = tirada?.resultado !== null && tirada?.resultado !== undefined;
-                      const pick3 = tirada?.resultado?.pick_3;
-                      const pick4 = tirada?.resultado?.pick_4;
+                    {grupo.tiradas.map((tirada) => {
+                      const tieneResultado = tirada.resultado_hoy !== null;
+                      const pick3 = tirada.resultado_hoy?.pick_3;
+                      const pick4 = tirada.resultado_hoy?.pick_4;
 
                       return (
                         <div
-                          key={hora}
+                          key={tirada.id}
                           className={`p-4 ${!tieneResultado ? 'bg-amber-50/50' : 'bg-white'}`}
                         >
                           {/* Hora y estado */}
                           <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-2">
                               <Clock className="w-4 h-4 text-gray-400" />
-                              <span className="font-semibold text-gray-900">{formatHora(hora)}</span>
+                              <span className="font-semibold text-gray-900">{formatHora(tirada.hora)}</span>
                             </div>
                             {!tieneResultado ? (
                               <span className="flex items-center gap-1 text-xs font-medium text-amber-700 bg-amber-100 px-2 py-1 rounded-full">
@@ -241,7 +213,7 @@ const ResultadosHoy: React.FC = () => {
                               )}
                               {pick4 && (
                                 <div>
-                                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Pick 4</span>
+                                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Pick 3</span>
                                   <div className="flex gap-2 mt-1">
                                     {pick4.split('').map((d, i) => (
                                       <div
