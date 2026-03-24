@@ -53,7 +53,7 @@ const History: React.FC = () => {
 
   useEffect(() => {
     loadApuestas();
-    const intervalId = setInterval(loadApuestas, 15000);
+    const intervalId = setInterval(loadApuestas, 5000);
 
     return () => clearInterval(intervalId);
   }, [loadApuestas]);

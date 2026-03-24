@@ -37,7 +37,7 @@ const ResultadosHoy: React.FC = () => {
 
   useEffect(() => {
     loadData();
-    const intervalId = setInterval(() => loadData(true), 15000);
+    const intervalId = setInterval(() => loadData(true), 5000);
 
     return () => clearInterval(intervalId);
   }, []);
