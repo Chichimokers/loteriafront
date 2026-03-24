@@ -51,6 +51,7 @@ const Betting: React.FC = () => {
   useEffect(() => {
     loadData();
     refreshUser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -60,6 +61,7 @@ const Betting: React.FC = () => {
       setTiradas([]);
       setSelectedTirada(null);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedLoteria]);
 
   const loadData = async () => {

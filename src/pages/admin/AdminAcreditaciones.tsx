@@ -27,7 +27,7 @@ const AdminAcreditaciones: React.FC = () => {
       const data = await acreditacionService.getAcreditaciones(filter);
       const arr = Array.isArray(data) ? data : (data as { results?: Acreditacion[] }).results || [];
       setAcreditaciones(arr);
-    } catch (err) {
+    } catch {
       console.error('Error loading acreditaciones:', err);
     } finally {
       setLoading(false);
@@ -43,7 +43,7 @@ const AdminAcreditaciones: React.FC = () => {
       await acreditacionService.approveAcreditacion(id);
       toast.showToast('Acreditación aprobada', 'success');
       await loadAcreditaciones();
-    } catch (err) {
+    } catch {
       toast.showToast('Error al aprobar', 'error');
     }
   };
@@ -53,7 +53,7 @@ const AdminAcreditaciones: React.FC = () => {
       await acreditacionService.rejectAcreditacion(id);
       toast.showToast('Acreditación rechazada', 'success');
       await loadAcreditaciones();
-    } catch (err) {
+    } catch {
       toast.showToast('Error al rechazar', 'error');
     }
   };

@@ -36,6 +36,7 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     loadTarjetas();
     refreshUser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadTarjetas = async () => {
