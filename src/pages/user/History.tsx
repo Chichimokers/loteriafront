@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { apuestaService, lotteryService } from '../../services/api';
 import ResultadosHoy from './ResultadosHoy';
 import { Dices, RefreshCw, Clock, Timer, Frown, PartyPopper } from 'lucide-react';
-import { formatMonto } from '../../utils/format';
+import { formatMonto, formatHora } from '../../utils/format';
 
 interface Apuesta {
   id: number;
@@ -139,7 +139,7 @@ const History: React.FC = () => {
                   {apuesta.hora_tirada && (
                     <div className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-medium flex items-center gap-1">
                       <Clock className="w-4 h-4" />
-                      Tirada: {apuesta.hora_tirada.split(':').slice(0,2).join(':')}
+                      Tirada: {formatHora(apuesta.hora_tirada)}
                     </div>
                   )}
                   {(() => {
