@@ -324,13 +324,23 @@ export function registerApuestasHandlers(bot: Bot) {
       const pairParts = text.split(/[,\s]+/).map((s: string) => s.trim()).filter(Boolean);
       const validPairs: string[][] = [];
       const invalid: string[] = [];
+      const duplicates: string[] = [];
 
       for (const part of pairParts) {
         const match = part.match(/^(\d{1,2})-(\d{1,2})$/);
         if (match) {
           const n1 = match[1].padStart(2, '0');
           const n2 = match[2].padStart(2, '0');
-          if (session.wizardData.numeros.length + validPairs.length < 10) {
+          // Verificar si ya existe (en cualquier orden)
+          const exists = session.wizardData.numeros.some(
+            (p: string[]) => (p[0] === n1 && p[1] === n2) || (p[0] === n2 && p[1] === n1)
+          );
+          const existsInBatch = validPairs.some(
+            (p) => (p[0] === n1 && p[1] === n2) || (p[0] === n2 && p[1] === n1)
+          );
+          if (exists || existsInBatch) {
+            duplicates.push(`${n1}-${n2}`);
+          } else if (session.wizardData.numeros.length + validPairs.length < 10) {
             validPairs.push([n1, n2]);
           }
         } else {
@@ -342,6 +352,7 @@ export function registerApuestasHandlers(bot: Bot) {
 
       let msg = '';
       if (validPairs.length > 0) msg += `✅ Agregadas: ${validPairs.map((p) => `${p[0]}-${p[1]}`).join(', ')}\n`;
+      if (duplicates.length > 0) msg += `⚠️ Ya existen: ${duplicates.join(', ')}\n`;
       if (invalid.length > 0) msg += `❌ Inválidos: ${invalid.join(', ')}\n`;
       msg += `\n📊 Parejas: ${session.wizardData.numeros.length}/10`;
       msg += `\n\nEscribe más parejas o /listo para continuar.`;

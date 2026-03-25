@@ -148,6 +148,15 @@ const Betting: React.FC = () => {
           setParejaParle([]);
           return;
         }
+        // Verificar si la pareja ya existe (en cualquier orden)
+        const existePareja = parejasParle.some(
+          (p) => (p[0] === nuevaPareja[0] && p[1] === nuevaPareja[1]) || (p[0] === nuevaPareja[1] && p[1] === nuevaPareja[0])
+        );
+        if (existePareja) {
+          toast.showToast(`La pareja ${nuevaPareja[0]}-${nuevaPareja[1]} ya está agregada`, 'warning');
+          setParejaParle([]);
+          return;
+        }
         setParejasParle([...parejasParle, nuevaPareja]);
         setParejaParle([]);
         toast.showToast(`Pareja ${nuevaPareja[0]}-${nuevaPareja[1]} agregada`, 'success');
