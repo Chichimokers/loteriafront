@@ -30,6 +30,12 @@ export function registerExtraccionHandlers(bot: Bot) {
       return;
     }
 
+    // Validate against available balance
+    if (session.wizardData.saldoDisponible && monto > Number(session.wizardData.saldoDisponible)) {
+      await ctx.reply(`❌ Saldo insuficiente. Disponible: ${formatMonto(session.wizardData.saldoDisponible)}`);
+      return;
+    }
+
     session.wizardStep = null;
 
     try {
@@ -47,9 +53,16 @@ export function registerExtraccionHandlers(bot: Bot) {
         `⏳ Tu solicitud está pendiente de aprobación.`,
         { parse_mode: 'Markdown' }
       );
-    } catch {
-      const msg = 'Error al crear solicitud';
-      await ctx.reply(`❌ ${msg}`);
+    } catch (err: any) {
+      const data = err.response?.data;
+      let errorMsg = err.message || 'Error al crear solicitud';
+      if (data) {
+        if (data.detail) errorMsg = data.detail;
+        else if (data.monto) errorMsg = Array.isArray(data.monto) ? data.monto.join(', ') : data.monto;
+        else if (data.non_field_errors) errorMsg = data.non_field_errors.join(', ');
+        else errorMsg = JSON.stringify(data);
+      }
+      await ctx.reply(`❌ ${errorMsg}`);
     }
 
     session.wizardData = {};
@@ -71,7 +84,7 @@ async function startExtraccion(ctx: any) {
     }
 
     session.wizardStep = 'extraccion:monto';
-    session.wizardData = {};
+    session.wizardData = { saldoDisponible: user.saldo_extraccion };
 
     await ctx.reply(
       `💸 *Extraer Dinero*\n\n` +
@@ -79,7 +92,13 @@ async function startExtraccion(ctx: any) {
       `Ingresa el monto que deseas extraer:`,
       { parse_mode: 'Markdown' }
     );
-  } catch {
-    await ctx.reply('❌ Error al obtener saldo. Intenta de nuevo.');
+  } catch (err: any) {
+    const data = err.response?.data;
+    let errorMsg = err.message || 'Error al obtener saldo';
+    if (data) {
+      if (data.detail) errorMsg = data.detail;
+      else errorMsg = JSON.stringify(data);
+    }
+    await ctx.reply(`❌ ${errorMsg}`);
   }
 }

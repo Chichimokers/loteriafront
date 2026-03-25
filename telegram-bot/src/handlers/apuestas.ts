@@ -24,9 +24,18 @@ export function registerApuestasHandlers(bot: Bot) {
 
     try {
       const tiradas = await lotteryService.getTiradasActivas(chatId);
+      const now = new Date();
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
       const filtered = tiradas.filter((t: any) => {
         if (t.loteria !== loteriaId && t.loteria_id !== loteriaId) return false;
         if (t.resultado_hoy) return false;
+        // Filter out past tiradas by time
+        if (t.hora) {
+          const parts = t.hora.split(':');
+          const tiradaMinutes = parseInt(parts[0]) * 60 + parseInt(parts[1]);
+          if (tiradaMinutes < currentMinutes) return false;
+        }
         return true;
       });
 
@@ -107,10 +116,15 @@ export function registerApuestasHandlers(bot: Bot) {
       session.wizardStep = 'apuesta:numeros';
       session.wizardData.numeros = [];
 
+      // Refresh user saldo
+      const user = await authService.getCurrentUser(chatId);
+      session.user = user;
+
       await ctx.answerCallbackQuery();
       await ctx.reply(
         `🎯 *${session.wizardData.loteriaNombre}* - ${session.wizardData.tiradaHora}\n` +
-        `Modalidad: ${modalidad.nombre} (${modalidad.premio_por_peso}x)\n\n` +
+        `Modalidad: ${modalidad.nombre} (${modalidad.premio_por_peso}x)\n` +
+        `💰 Saldo: ${formatMonto(user.saldo_principal)}\n\n` +
         `Ingresa los números a jugar (3 dígitos cada uno).\n` +
         `Escribe cada número por separado o varios separados por coma.\n` +
         `Ejemplo: 123, 456, 789\n\n` +
@@ -191,6 +205,19 @@ export function registerApuestasHandlers(bot: Bot) {
     const total = monto * session.wizardData.numeros.length;
     const premioTotal = monto * session.wizardData.premioPorPeso * session.wizardData.numeros.length;
 
+    // Validate saldo
+    const user = await authService.getCurrentUser(chatId);
+    session.user = user;
+    if (total > Number(user.saldo_principal)) {
+      await ctx.reply(
+        `❌ Saldo insuficiente.\n` +
+        `💰 Tu saldo: ${formatMonto(user.saldo_principal)}\n` +
+        `📊 Total requerido: ${formatMonto(total)}\n\n` +
+        `Usa /acreditar para depositar fondos.`
+      );
+      return;
+    }
+
     session.wizardData.montoPorNumero = monto;
     session.wizardStep = null;
 
@@ -202,7 +229,8 @@ export function registerApuestasHandlers(bot: Bot) {
       `🎯 Números: ${session.wizardData.numeros.join(', ')}\n` +
       `💵 Monto por número: ${monto.toFixed(2)} CUP\n` +
       `📊 Total: *${total.toFixed(2)} CUP*\n` +
-      `🏆 Premio máximo: *${premioTotal.toFixed(2)} CUP*\n\n` +
+      `🏆 Premio máximo: *${premioTotal.toFixed(2)} CUP*\n` +
+      `💰 Tu saldo: ${formatMonto(user.saldo_principal)}\n\n` +
       `¿Confirmar apuesta?`,
       {
         parse_mode: 'Markdown',
@@ -280,6 +308,9 @@ async function startApuestaWizard(ctx: any) {
       { parse_mode: 'Markdown', reply_markup: loteriasKeyboard(activas, 'apuesta:lot') }
     );
   } catch (err: any) {
-    await ctx.reply('❌ Error al cargar loterías. Intenta de nuevo.');
+    const data = err.response?.data;
+    let errorMsg = err.message || 'Error al cargar loterías';
+    if (data?.detail) errorMsg = data.detail;
+    await ctx.reply(`❌ ${errorMsg}`);
   }
 }

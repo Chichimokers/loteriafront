@@ -78,9 +78,15 @@ export function registerAcreditacionHandlers(bot: Bot) {
           `⏳ Tu solicitud está pendiente de aprobación.`,
           { parse_mode: 'Markdown' }
         );
-      } catch {
-        const msg = 'Error al crear solicitud';
-        await ctx.reply(`❌ ${msg}`);
+      } catch (err: any) {
+        const data = err.response?.data;
+        let errorMsg = err.message || 'Error al crear solicitud';
+        if (data) {
+          if (data.detail) errorMsg = data.detail;
+          else if (data.non_field_errors) errorMsg = data.non_field_errors.join(', ');
+          else errorMsg = JSON.stringify(data);
+        }
+        await ctx.reply(`❌ ${errorMsg}`);
       }
 
       session.wizardData = {};
@@ -110,7 +116,13 @@ async function startAcreditacion(ctx: any) {
       '💳 *Acreditar Saldo*\n\nPaso 1: Selecciona la tarjeta a la que transferiste:',
       { parse_mode: 'Markdown', reply_markup: tarjetasKeyboard(tarjetas, 'acred:tar') }
     );
-  } catch {
-    await ctx.reply('❌ Error al cargar tarjetas. Intenta de nuevo.');
+  } catch (err: any) {
+    const data = err.response?.data;
+    let errorMsg = err.message || 'Error al cargar tarjetas';
+    if (data) {
+      if (data.detail) errorMsg = data.detail;
+      else errorMsg = JSON.stringify(data);
+    }
+    await ctx.reply(`❌ ${errorMsg}`);
   }
 }

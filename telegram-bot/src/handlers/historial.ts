@@ -1,7 +1,7 @@
 import type { Bot } from 'grammy';
 import { authGuard } from '../middleware/auth.js';
 import { apuestaService } from '../api.js';
-import { formatMonto } from '../utils/format.js';
+import { formatMonto, formatHora } from '../utils/format.js';
 
 export function registerHistorialHandlers(bot: Bot) {
   // /historial command
@@ -28,17 +28,33 @@ async function showHistorial(ctx: any) {
 
     // Show last 15 bets
     const recent = apuestas.slice(0, 15);
-    let msg = `📋 *Mis Apuestas* (últimas ${recent.length})\n\n`;
+    let msg = `📋 *Mis Apuestas* (últimas ${recent.length} de ${apuestas.length})\n\n`;
 
     for (const a of recent) {
       const status = a.paga === true ? '✅ Ganado' : a.paga === false && a.resultado ? '❌ Perdido' : '⏳ Pendiente';
       const numeros = Array.isArray(a.numeros) ? a.numeros.join(', ') : a.numeros;
-      msg += `${status}\n`;
-      msg += `  🎰 ${a.loteria_nombre || 'N/A'}\n`;
+      msg += `${status} #${a.id}\n`;
+      msg += `  🎰 ${a.loteria_nombre || 'N/A'}`;
+      if (a.hora_tirada || a.tirada_hora) msg += ` - ${formatHora(a.hora_tirada || a.tirada_hora)}`;
+      msg += '\n';
+      if (a.modalidad_nombre) msg += `  📐 ${a.modalidad_nombre}\n`;
       msg += `  🎯 ${numeros}\n`;
       msg += `  💵 ${formatMonto(a.monto_total || 0)}`;
       if (a.premio_total > 0) msg += ` → 🏆 ${formatMonto(a.premio_total)}`;
-      msg += `\n  📅 ${a.fecha || ''}\n\n`;
+      msg += `\n  📅 ${a.fecha || ''}`;
+
+      // Show result if available
+      if (a.resultado) {
+        if (a.resultado.pick_3) {
+          const p3 = a.resultado.pick_3.split('').join(' ');
+          msg += `\n  🎱 Pick 3: ${p3}`;
+        }
+        if (a.resultado.pick_4) {
+          const p4 = a.resultado.pick_4.split('').join(' ');
+          msg += `\n  🎱 Pick 4: ${p4}`;
+        }
+      }
+      msg += '\n\n';
     }
 
     // Telegram message limit is 4096 chars
@@ -47,7 +63,10 @@ async function showHistorial(ctx: any) {
     }
 
     await ctx.reply(msg, { parse_mode: 'Markdown' });
-  } catch {
-    await ctx.reply('❌ Error al obtener historial. Intenta de nuevo.');
+  } catch (err: any) {
+    const data = err.response?.data;
+    let errorMsg = err.message || 'Error al obtener historial';
+    if (data?.detail) errorMsg = data.detail;
+    await ctx.reply(`❌ ${errorMsg}`);
   }
 }
