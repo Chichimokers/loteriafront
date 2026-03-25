@@ -262,7 +262,17 @@ const Betting: React.FC = () => {
       setSelectedModalidad(null);
       setModoCandado(false);
     } catch (err: unknown) {
-      toast.showToast(err instanceof Error ? err.message : 'Error al realizar apuesta', 'error');
+      let msg = 'Error al realizar apuesta';
+      if (err && typeof err === 'object' && 'response' in err) {
+        const axiosErr = err as { response?: { data?: { error?: string; detail?: string; non_field_errors?: string[] } } };
+        const data = axiosErr.response?.data;
+        if (data?.error) msg = data.error;
+        else if (data?.detail) msg = data.detail;
+        else if (data?.non_field_errors) msg = data.non_field_errors.join(', ');
+      } else if (err instanceof Error) {
+        msg = err.message;
+      }
+      toast.showToast(msg, 'error');
     } finally {
       setLoading(false);
     }

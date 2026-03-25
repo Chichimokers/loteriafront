@@ -544,11 +544,14 @@ export function registerApuestasHandlers(bot: Bot) {
       );
     } catch (err: any) {
       const data = err.response?.data;
-      let errorMsg = err.message || 'Error al realizar apuesta';
+      let errorMsg = 'Error al realizar apuesta';
       if (data) {
-        if (data.detail) errorMsg = data.detail;
+        if (data.error) errorMsg = data.error;
+        else if (data.detail) errorMsg = data.detail;
         else if (data.non_field_errors) errorMsg = data.non_field_errors.join(', ');
         else errorMsg = JSON.stringify(data);
+      } else if (err.message) {
+        errorMsg = err.message;
       }
       await ctx.reply(`❌ ${errorMsg}`);
     }
