@@ -30,6 +30,18 @@ services:
     volumes:
       - /var/log/nginx:/var/log/nginx:rw
 
+  telegram-bot:
+    build:
+      context: ./telegram-bot
+      dockerfile: Dockerfile
+    image: loteria-bot:latest
+    container_name: loteria-telegram-bot
+    env_file:
+      - ./telegram-bot/.env
+    networks:
+      - loteria-network
+    restart: unless-stopped
+
 networks:
   loteria-network:
     driver: bridge

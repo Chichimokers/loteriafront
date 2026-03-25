@@ -8,7 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    name: Build Frontend
+    name: Build Frontend & Bot
 
     steps:
       - name: ⬇️ Checkout code
@@ -37,6 +37,21 @@ jobs:
           path: dist/
           retention-days: 1
 
+      - name: 🤖 Install bot dependencies
+        run: npm install
+        working-directory: telegram-bot
+
+      - name: 🏗️ Build telegram bot
+        run: npm run build
+        working-directory: telegram-bot
+
+      - name: 📤 Upload bot dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bot-dist-build
+          path: telegram-bot/dist/
+          retention-days: 1
+
   deploy:
     name: Deploy Loteria
     runs-on: self-hosted
@@ -47,11 +62,17 @@ jobs:
       - name: ⬇️ Checkout code
         uses: actions/checkout@v4
 
-      - name: 📥 Download build artifact
+      - name: 📥 Download frontend build artifact
         uses: actions/download-artifact@v4
         with:
           name: dist-build
           path: dist/
+
+      - name: 📥 Download bot build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: bot-dist-build
+          path: telegram-bot/dist/
 
       - name: 📋 Check Docker and Docker Compose
         run: |
@@ -66,8 +87,9 @@ jobs:
         run: |
           echo "=== Stopping containers ==="
           docker-compose down -v --remove-orphans 2>/dev/null || true
-          echo "=== Removing dangling nginx containers ==="
+          echo "=== Removing dangling containers ==="
           docker rm -f loteria-frontend 2>/dev/null || true
+          docker rm -f loteria-telegram-bot 2>/dev/null || true
           docker stop $(docker ps -q --filter "ancestor=nginx:alpine") 2>/dev/null || true
           echo "=== Pruning unused networks ==="
           docker network prune -f 2>/dev/null || true
@@ -76,12 +98,12 @@ jobs:
           echo "=== Containers after cleanup ==="
           docker ps -a
 
-      - name: 🐳 Build Docker image
+      - name: 🐳 Build Docker images
         run: |
-          echo "=== Building Docker image ==="
-          docker build -t loteria:latest .
-          echo "=== Image built successfully ==="
-          docker images | grep loteria
+          echo "=== Building all Docker images ==="
+          docker-compose build
+          echo "=== Images built successfully ==="
+          docker images | grep -E "loteria"
 
       - name: 🚀 Start containers
         run: |
@@ -103,11 +125,14 @@ jobs:
           docker exec loteria-frontend nginx -t 2>&1 || true
           echo "=== Checking if port 3000 is listening ==="
           docker exec loteria-frontend netstat -tlnp 2>/dev/null || docker exec loteria-frontend ss -tlnp 2>/dev/null || true
+          echo "=== Checking bot container ==="
+          docker logs loteria-telegram-bot --tail=10 2>&1 || echo "Bot container not running"
           for i in {1..15}; do
             echo "Attempt $i/15..."
             if curl -sf http://localhost:3000/ > /dev/null 2>&1; then
               echo "✅ Application is healthy!"
               curl -I http://localhost:3000/
+              echo "✅ Bot container running: $(docker inspect -f '{{.State.Running}}' loteria-telegram-bot 2>/dev/null || echo 'unknown')"
               exit 0
             fi
             echo "⏳ Waiting... ($i/15)"
