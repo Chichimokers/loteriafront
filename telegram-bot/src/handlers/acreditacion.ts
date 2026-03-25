@@ -22,11 +22,29 @@ export function registerAcreditacionHandlers(bot: Bot) {
     const session = getSession(chatId);
     const tarjetaId = parseInt(ctx.match[1]);
 
+    // Get full tarjeta details
+    const tarjetas = await tarjetaService.getAll(chatId);
+    const tarjeta = tarjetas.find((t: any) => t.id === tarjetaId);
+
+    if (!tarjeta) {
+      await ctx.answerCallbackQuery('Tarjeta no encontrada');
+      return;
+    }
+
     session.wizardData.tarjetaId = tarjetaId;
+    session.wizardData.tarjetaNumero = tarjeta.numero || 'N/A';
+    session.wizardData.tarjetaMovil = tarjeta.movil || 'N/A';
     session.wizardStep = 'acreditacion:monto';
 
     await ctx.answerCallbackQuery();
-    await ctx.reply('💵 Ingresa el monto que transferiste (en CUP):');
+    await ctx.reply(
+      `💳 *Datos de la tarjeta seleccionada:*\n\n` +
+      `🏦 Banco: ${tarjeta.banco || 'N/A'}\n` +
+      `🔢 Tarjeta: ${tarjeta.numero || 'N/A'}\n` +
+      `📱 Móvil: ${tarjeta.movil || 'N/A'}\n\n` +
+      `Realiza tu transferencia a estos datos y luego ingresa el monto transferido (en CUP):`,
+      { parse_mode: 'Markdown' }
+    );
   });
 
   // Handle text input for acreditacion wizard
