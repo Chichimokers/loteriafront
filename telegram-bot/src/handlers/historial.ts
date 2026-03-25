@@ -38,7 +38,15 @@ async function showHistorial(ctx: any) {
       if (a.hora_tirada || a.tirada_hora) msg += ` - ${formatHora(a.hora_tirada || a.tirada_hora)}`;
       msg += '\n';
       if (a.modalidad_nombre) msg += `  📐 ${a.modalidad_nombre}\n`;
-      msg += `  🎯 ${numeros}\n`;
+
+      // Mostrar combinaciones generadas (candado) o números normales
+      if (a.combinaciones_generadas && a.combinaciones_generadas.length > 0) {
+        const combos = a.combinaciones_generadas.map((p: string[]) => `${p[0]}-${p[1]}`).join(', ');
+        msg += `  🔗 Combinaciones (${a.combinaciones_generadas.length}): ${combos}\n`;
+      } else {
+        msg += `  🎯 ${numeros}\n`;
+      }
+
       msg += `  💵 ${formatMonto(a.monto_total || 0)}`;
       if (a.premio_total > 0) msg += ` → 🏆 ${formatMonto(a.premio_total)}`;
       msg += `\n  📅 ${a.fecha || ''}`;

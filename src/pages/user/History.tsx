@@ -14,6 +14,7 @@ interface Apuesta {
   numeros: string[];
   monto_total: string;
   monto_por_numero: string;
+  combinaciones_generadas: string[][] | null;
   premiagos: string | null;
   premio_total: string;
   paga: boolean;
@@ -197,17 +198,37 @@ const History: React.FC = () => {
 
                 {/* Números */}
                 <div>
-                  <p className="text-xs text-gray-500 mb-2">Números jugados</p>
-                  <div className="flex flex-wrap gap-2">
-                    {apuesta.numeros.map((num) => (
-                      <div 
-                        key={num} 
-                        className="w-14 h-14 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center text-white text-lg font-bold shadow-md"
-                      >
-                        {num}
+                  {apuesta.combinaciones_generadas && apuesta.combinaciones_generadas.length > 0 ? (
+                    <>
+                      <p className="text-xs text-gray-500 mb-2">Combinaciones ({apuesta.combinaciones_generadas.length})</p>
+                      <div className="flex flex-wrap gap-2">
+                        {apuesta.combinaciones_generadas.map((par, idx) => (
+                          <div
+                            key={idx}
+                            className="flex items-center gap-1 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl px-3 py-2 text-white shadow-md"
+                          >
+                            <span className="text-lg font-bold">{par[0]}</span>
+                            <span className="text-sm opacity-70">-</span>
+                            <span className="text-lg font-bold">{par[1]}</span>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-xs text-gray-500 mb-2">Números jugados</p>
+                      <div className="flex flex-wrap gap-2">
+                        {apuesta.numeros.map((num) => (
+                          <div
+                            key={num}
+                            className="w-14 h-14 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center text-white text-lg font-bold shadow-md"
+                          >
+                            {num}
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             ))}
