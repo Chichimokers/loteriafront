@@ -1,5 +1,5 @@
 import type { Context, NextFunction } from 'grammy';
-import { getSession, isAuthenticated } from '../utils/store.js';
+import { isAuthenticated } from '../utils/store.js';
 
 export async function authGuard(ctx: Context, next: NextFunction) {
   if (!ctx.chat) return next();

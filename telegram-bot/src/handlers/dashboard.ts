@@ -32,7 +32,7 @@ async function showSaldo(ctx: any) {
       `Usa /extraer para retirar ganancias`,
       { parse_mode: 'Markdown' }
     );
-  } catch (err: any) {
+  } catch {
     await ctx.reply('❌ Error al obtener saldo. Intenta de nuevo.');
   }
 }

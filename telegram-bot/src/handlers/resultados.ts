@@ -51,7 +51,7 @@ async function showResultados(ctx: any) {
     }
 
     await ctx.reply(msg, { parse_mode: 'Markdown' });
-  } catch (err: any) {
+  } catch {
     await ctx.reply('❌ Error al obtener resultados. Intenta de nuevo.');
   }
 }

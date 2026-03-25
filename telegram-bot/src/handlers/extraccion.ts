@@ -47,8 +47,8 @@ export function registerExtraccionHandlers(bot: Bot) {
         `⏳ Tu solicitud está pendiente de aprobación.`,
         { parse_mode: 'Markdown' }
       );
-    } catch (err: any) {
-      const msg = err.response?.data?.detail || err.response?.data?.monto?.[0] || 'Error al crear solicitud';
+    } catch {
+      const msg = 'Error al crear solicitud';
       await ctx.reply(`❌ ${msg}`);
     }
 
@@ -79,7 +79,7 @@ async function startExtraccion(ctx: any) {
       `Ingresa el monto que deseas extraer:`,
       { parse_mode: 'Markdown' }
     );
-  } catch (err: any) {
+  } catch {
     await ctx.reply('❌ Error al obtener saldo. Intenta de nuevo.');
   }
 }

@@ -47,7 +47,7 @@ async function showHistorial(ctx: any) {
     }
 
     await ctx.reply(msg, { parse_mode: 'Markdown' });
-  } catch (err: any) {
+  } catch {
     await ctx.reply('❌ Error al obtener historial. Intenta de nuevo.');
   }
 }

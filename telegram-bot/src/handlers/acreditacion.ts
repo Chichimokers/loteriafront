@@ -1,7 +1,7 @@
 import type { Bot } from 'grammy';
 import { authGuard } from '../middleware/auth.js';
 import { getSession } from '../utils/store.js';
-import { acreditacionService, tarjetaService, authService } from '../api.js';
+import { acreditacionService, tarjetaService } from '../api.js';
 import { tarjetasKeyboard } from '../keyboards/keyboards.js';
 import { formatMonto } from '../utils/format.js';
 
@@ -78,8 +78,8 @@ export function registerAcreditacionHandlers(bot: Bot) {
           `⏳ Tu solicitud está pendiente de aprobación.`,
           { parse_mode: 'Markdown' }
         );
-      } catch (err: any) {
-        const msg = err.response?.data?.detail || 'Error al crear solicitud';
+      } catch {
+        const msg = 'Error al crear solicitud';
         await ctx.reply(`❌ ${msg}`);
       }
 
@@ -110,7 +110,7 @@ async function startAcreditacion(ctx: any) {
       '💳 *Acreditar Saldo*\n\nPaso 1: Selecciona la tarjeta a la que transferiste:',
       { parse_mode: 'Markdown', reply_markup: tarjetasKeyboard(tarjetas, 'acred:tar') }
     );
-  } catch (err: any) {
+  } catch {
     await ctx.reply('❌ Error al cargar tarjetas. Intenta de nuevo.');
   }
 }

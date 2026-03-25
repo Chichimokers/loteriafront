@@ -1,5 +1,5 @@
 import type { Context, NextFunction } from 'grammy';
-import { getSession, isAuthenticated, isAdmin } from '../utils/store.js';
+import { isAuthenticated, isAdmin } from '../utils/store.js';
 
 export async function adminGuard(ctx: Context, next: NextFunction) {
   if (!ctx.chat) return next();
