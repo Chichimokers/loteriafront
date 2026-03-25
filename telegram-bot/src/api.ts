@@ -118,9 +118,15 @@ export const lotteryService = {
 
 // Betting endpoints
 export const apuestaService = {
-  createApuesta: async (chatId: number, data: { tirada_id: number; modalidad_id: number; numeros: string[]; monto_por_numero: number }) => {
+  createApuesta: async (chatId: number, data: { tirada_id: number; modalidad_id: number; numeros: string[] | string[][]; monto_por_numero: number }) => {
     const authed = createAuthedApi(chatId);
     const response = await authed.post('/apuestas/', data);
+    return response.data;
+  },
+
+  createCandado: async (chatId: number, data: { tirada_id: number; numeros: string[]; monto_por_numero: number }) => {
+    const authed = createAuthedApi(chatId);
+    const response = await authed.post('/apuestas/candado/', data);
     return response.data;
   },
 
