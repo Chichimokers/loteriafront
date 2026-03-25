@@ -1,20 +1,27 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useNavigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../../context/auth-context';
 import { Dices, Wallet, LogOut, Menu, X, Bell } from 'lucide-react';
 import { formatMonto } from '../../utils/format';
 import { notificacionService } from '../../services/api';
+import { playNotificationSound } from '../../utils/sound';
 
 const UserLayout: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [noLeidas, setNoLeidas] = useState(0);
+  const prevNoLeidas = useRef(0);
 
   const loadNoLeidas = useCallback(async () => {
     try {
       const data = await notificacionService.getNoLeidas();
-      setNoLeidas(data.no_leidas || 0);
+      const count = data.no_leidas || 0;
+      if (count > prevNoLeidas.current && prevNoLeidas.current > 0) {
+        playNotificationSound();
+      }
+      prevNoLeidas.current = count;
+      setNoLeidas(count);
     } catch {
       // silent fail
     }
@@ -22,7 +29,7 @@ const UserLayout: React.FC = () => {
 
   useEffect(() => {
     loadNoLeidas();
-    const interval = setInterval(loadNoLeidas, 30000);
+    const interval = setInterval(loadNoLeidas, 15000);
     return () => clearInterval(interval);
   }, [loadNoLeidas]);
 

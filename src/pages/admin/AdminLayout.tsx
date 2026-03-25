@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/auth-context';
 import { 
@@ -20,6 +20,7 @@ import {
   Bell
 } from 'lucide-react';
 import { notificacionService } from '../../services/api';
+import { playNotificationSound } from '../../utils/sound';
 
 const AdminLayout: React.FC = () => {
   const { user, logout } = useAuth();
@@ -27,11 +28,17 @@ const AdminLayout: React.FC = () => {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [noLeidas, setNoLeidas] = useState(0);
+  const prevNoLeidas = useRef(0);
 
   const loadNoLeidas = useCallback(async () => {
     try {
       const data = await notificacionService.getAdminNoLeidas();
-      setNoLeidas(data.no_leidas || 0);
+      const count = data.no_leidas || 0;
+      if (count > prevNoLeidas.current && prevNoLeidas.current > 0) {
+        playNotificationSound();
+      }
+      prevNoLeidas.current = count;
+      setNoLeidas(count);
     } catch {
       // silent fail
     }
@@ -39,7 +46,7 @@ const AdminLayout: React.FC = () => {
 
   useEffect(() => {
     loadNoLeidas();
-    const interval = setInterval(loadNoLeidas, 30000);
+    const interval = setInterval(loadNoLeidas, 15000);
     return () => clearInterval(interval);
   }, [loadNoLeidas]);
 
