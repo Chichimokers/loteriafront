@@ -3,6 +3,7 @@ import { adminGuard } from '../../middleware/admin.js';
 import { getSession } from '../../utils/store.js';
 import { lotteryService, resultadoService } from '../../api.js';
 import { tiradasKeyboard } from '../../keyboards/keyboards.js';
+import { formatHora } from '../../utils/format.js';
 
 export function registerAdminResultadosHandlers(bot: Bot) {
   // /admin_resultados command
@@ -32,7 +33,7 @@ export function registerAdminResultadosHandlers(bot: Bot) {
       }
 
       session.wizardData.tiradaId = tiradaId;
-      session.wizardData.tiradaInfo = `${tirada.loteria_nombre || 'Lotería'} - ${tirada.hora}`;
+      session.wizardData.tiradaInfo = `${tirada.loteria_nombre || 'Lotería'} - ${formatHora(tirada.hora)}`;
       session.wizardStep = 'admin:resultado:pick3';
 
       await ctx.answerCallbackQuery();

@@ -1,4 +1,5 @@
 import { InlineKeyboard, Keyboard } from 'grammy';
+import { formatHora } from '../utils/format.js';
 
 // Main menu keyboard (persistent)
 export const mainMenuKeyboard = new Keyboard()
@@ -58,7 +59,7 @@ export function tiradasKeyboard(tiradas: any[], prefix: string = 'tir'): InlineK
   for (const t of tiradas) {
     const estado = t.resultado_hoy ? '✅' : (t.activa ? '🟢' : '🔴');
     const loteria = t.loteria_nombre || '';
-    kb.text(`${estado} ${loteria} - ${t.hora}`, `${prefix}:${t.id}`).row();
+    kb.text(`${estado} ${loteria} - ${formatHora(t.hora)}`, `${prefix}:${t.id}`).row();
   }
   return kb;
 }
