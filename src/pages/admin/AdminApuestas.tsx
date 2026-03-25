@@ -11,6 +11,7 @@ interface Apuesta {
   modalidad_nombre: string;
   tirada: number;
   numeros: string[];
+  combinaciones_generadas: string[][] | null;
   monto_total: string;
   monto_por_numero: string;
   premiados: { numero: string; premio: number; tipo: string }[] | null;
@@ -205,11 +206,25 @@ const AdminApuestas: React.FC = () => {
                   </span>
                 </div>
                 <div className="flex flex-wrap gap-1">
-                  {apuesta.numeros.map((num, i) => (
-                    <span key={i} className="px-2 py-1 bg-amber-100 text-amber-800 rounded text-xs font-medium">
-                      {num}
-                    </span>
-                  ))}
+                  {apuesta.combinaciones_generadas && apuesta.combinaciones_generadas.length > 0 ? (
+                    apuesta.combinaciones_generadas.map((par, i) => (
+                      <span key={i} className="px-2 py-1 bg-amber-100 text-amber-800 rounded text-xs font-medium">
+                        {par[0]}-{par[1]}
+                      </span>
+                    ))
+                  ) : Array.isArray(apuesta.numeros[0]) ? (
+                    (apuesta.numeros as unknown as string[][]).map((par, i) => (
+                      <span key={i} className="px-2 py-1 bg-amber-100 text-amber-800 rounded text-xs font-medium">
+                        {par[0]}-{par[1]}
+                      </span>
+                    ))
+                  ) : (
+                    apuesta.numeros.map((num, i) => (
+                      <span key={i} className="px-2 py-1 bg-amber-100 text-amber-800 rounded text-xs font-medium">
+                        {num}
+                      </span>
+                    ))
+                  )}
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div>
@@ -285,11 +300,25 @@ const AdminApuestas: React.FC = () => {
                       <td className="p-4 text-sm text-gray-600">{apuesta.modalidad_nombre}</td>
                       <td className="p-4">
                         <div className="flex flex-wrap gap-1">
-                          {apuesta.numeros.map((num, i) => (
-                            <span key={i} className="px-2 py-1 bg-amber-100 text-amber-800 rounded text-xs font-medium">
-                              {num}
-                            </span>
-                          ))}
+                          {apuesta.combinaciones_generadas && apuesta.combinaciones_generadas.length > 0 ? (
+                            apuesta.combinaciones_generadas.map((par, i) => (
+                              <span key={i} className="px-2 py-1 bg-amber-100 text-amber-800 rounded text-xs font-medium">
+                                {par[0]}-{par[1]}
+                              </span>
+                            ))
+                          ) : Array.isArray(apuesta.numeros[0]) ? (
+                            (apuesta.numeros as unknown as string[][]).map((par, i) => (
+                              <span key={i} className="px-2 py-1 bg-amber-100 text-amber-800 rounded text-xs font-medium">
+                                {par[0]}-{par[1]}
+                              </span>
+                            ))
+                          ) : (
+                            apuesta.numeros.map((num, i) => (
+                              <span key={i} className="px-2 py-1 bg-amber-100 text-amber-800 rounded text-xs font-medium">
+                                {num}
+                              </span>
+                            ))
+                          )}
                         </div>
                       </td>
                       <td className="p-4 text-sm font-medium text-gray-900">{apuesta.monto_total} CUP</td>

@@ -47,11 +47,18 @@ async function showAllApuestas(ctx: any, filter: string = 'todas') {
       .text('⏳ Pendientes', 'admin:apuestas_filter:pendientes');
 
     const recent = filtered.slice(0, 10);
-    let msg = `📝 *Apuestas* (${filtered.length} de ${apuestas.length}) - Filtro: ${filter}\n\n`;
+    let msg = `Apuestas (${filtered.length} de ${apuestas.length}) - Filtro: ${filter}\n\n`;
 
     for (const a of recent) {
       const status = a.paga === true ? '✅' : a.paga === false && a.resultado ? '❌' : '⏳';
-      const numeros = Array.isArray(a.numeros) ? a.numeros.join(', ') : a.numeros;
+      let numeros = '';
+      if (a.combinaciones_generadas && a.combinaciones_generadas.length > 0) {
+        numeros = a.combinaciones_generadas.map((p: string[]) => `${p[0]}-${p[1]}`).join(', ');
+      } else if (Array.isArray(a.numeros) && a.numeros.length > 0 && Array.isArray(a.numeros[0])) {
+        numeros = a.numeros.map((p: string[]) => `${p[0]}-${p[1]}`).join(', ');
+      } else {
+        numeros = Array.isArray(a.numeros) ? a.numeros.join(', ') : a.numeros;
+      }
       msg += `${status} #${a.id} - ${a.usuario_email || 'N/A'}\n`;
       msg += `  🎰 ${a.loteria_nombre || 'N/A'} | 🎯 ${numeros}\n`;
       msg += `  💵 ${formatMonto(a.monto_total || 0)}\n\n`;
@@ -59,7 +66,7 @@ async function showAllApuestas(ctx: any, filter: string = 'todas') {
 
     if (msg.length > 4000) msg = msg.slice(0, 3990) + '\n...';
 
-    await ctx.reply(msg, { parse_mode: 'Markdown', reply_markup: kb });
+    await ctx.reply(msg, { reply_markup: kb });
   } catch (err: any) {
     await ctx.reply('❌ Error al obtener apuestas.');
   }
