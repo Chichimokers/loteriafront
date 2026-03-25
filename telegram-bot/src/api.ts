@@ -5,6 +5,14 @@ const API_URL = process.env.API_URL || 'https://inventory.cloudns.be/api/v1';
 
 const api = axios.create({ baseURL: API_URL });
 
+// Normalize paginated or array responses to always return an array
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function toArray(data: any): any[] {
+  if (Array.isArray(data)) return data;
+  if (data && Array.isArray(data.results)) return data.results;
+  return [];
+}
+
 export function createAuthedApi(chatId: number) {
   const session = getSession(chatId);
   const instance = axios.create({ baseURL: API_URL });
@@ -80,31 +88,31 @@ export const lotteryService = {
   getLoterias: async (chatId: number) => {
     const authed = createAuthedApi(chatId);
     const response = await authed.get('/loterias/loterias/');
-    return response.data;
+    return toArray(response.data);
   },
 
   getTiradasActivas: async (chatId: number) => {
     const authed = createAuthedApi(chatId);
     const response = await authed.get('/loterias/tiradas/activas/');
-    return response.data;
+    return toArray(response.data);
   },
 
   getTiradas: async (chatId: number) => {
     const authed = createAuthedApi(chatId);
     const response = await authed.get('/loterias/tiradas/');
-    return response.data;
+    return toArray(response.data);
   },
 
   getResultadosHoy: async (chatId: number) => {
     const authed = createAuthedApi(chatId);
     const response = await authed.get('/loterias/tiradas/resultados_hoy/');
-    return response.data;
+    return toArray(response.data);
   },
 
   getModalidades: async (chatId: number) => {
     const authed = createAuthedApi(chatId);
     const response = await authed.get('/loterias/modalidades/');
-    return response.data;
+    return toArray(response.data);
   },
 };
 
@@ -119,13 +127,13 @@ export const apuestaService = {
   getMisApuestas: async (chatId: number) => {
     const authed = createAuthedApi(chatId);
     const response = await authed.get('/apuestas/mis_apuestas/');
-    return response.data;
+    return toArray(response.data);
   },
 
   getAllApuestas: async (chatId: number) => {
     const authed = createAuthedApi(chatId);
     const response = await authed.get('/apuestas/');
-    return response.data;
+    return toArray(response.data);
   },
 };
 
@@ -141,7 +149,7 @@ export const acreditacionService = {
     const authed = createAuthedApi(chatId);
     const params = estado ? { estado } : {};
     const response = await authed.get('/usuarios/acreditaciones/', { params });
-    return response.data;
+    return toArray(response.data);
   },
 
   approve: async (chatId: number, id: number) => {
@@ -169,7 +177,7 @@ export const extraccionService = {
     const authed = createAuthedApi(chatId);
     const params = estado ? { estado } : {};
     const response = await authed.get('/usuarios/extracciones/', { params });
-    return response.data;
+    return toArray(response.data);
   },
 
   approve: async (chatId: number, id: number) => {
@@ -190,7 +198,7 @@ export const usuarioService = {
   getAll: async (chatId: number) => {
     const authed = createAuthedApi(chatId);
     const response = await authed.get('/usuarios/');
-    return response.data;
+    return toArray(response.data);
   },
 
   update: async (chatId: number, id: number, data: Record<string, any>) => {
@@ -205,7 +213,7 @@ export const tarjetaService = {
   getAll: async (chatId: number) => {
     const authed = createAuthedApi(chatId);
     const response = await authed.get('/usuarios/tarjetas/');
-    return response.data;
+    return toArray(response.data);
   },
 };
 
@@ -220,7 +228,7 @@ export const resultadoService = {
   getAll: async (chatId: number) => {
     const authed = createAuthedApi(chatId);
     const response = await authed.get('/loterias/resultados/');
-    return response.data;
+    return toArray(response.data);
   },
 };
 
