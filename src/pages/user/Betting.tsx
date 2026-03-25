@@ -195,7 +195,7 @@ const Betting: React.FC = () => {
     e.preventDefault();
     setLoading(true);
 
-    if (!selectedTirada || !selectedModalidad) {
+    if (!selectedTirada || (!modoCandado && !selectedModalidad)) {
       toast.showToast('Por favor complete todos los campos', 'warning');
       setLoading(false);
       return;
@@ -228,7 +228,7 @@ const Betting: React.FC = () => {
         }
         await apuestaService.createApuesta({
           tirada_id: selectedTirada,
-          modalidad_id: selectedModalidad,
+          modalidad_id: selectedModalidad!,
           numeros: parejasParle as unknown as string[],
           monto_por_numero: montoPorNumero,
         });
@@ -240,7 +240,7 @@ const Betting: React.FC = () => {
         }
         await apuestaService.createApuesta({
           tirada_id: selectedTirada,
-          modalidad_id: selectedModalidad,
+          modalidad_id: selectedModalidad!,
           numeros: numeros,
           monto_por_numero: montoPorNumero,
         });
