@@ -104,10 +104,10 @@ export function yesNoKeyboard(prefix: string): InlineKeyboard {
 
 // Banks keyboard
 export const banksKeyboard = new InlineKeyboard()
-  .text('Metropolitano', 'bank:Metropolitano').row()
-  .text('Bandec', 'bank:Bandec').row()
-  .text('BPA', 'bank:BPA').row()
-  .text('Banco de Cuba', 'bank:Banco de Cuba');
+  .text('Metropolitano', 'bank:metropolitano').row()
+  .text('Bandec', 'bank:bandec').row()
+  .text('BPA', 'bank:bpa').row()
+  .text('Monedero', 'bank:monedero');
 
 // Acreditacion/Extraccion approve/reject keyboard
 export function approveRejectKeyboard(type: string, id: number): InlineKeyboard {
