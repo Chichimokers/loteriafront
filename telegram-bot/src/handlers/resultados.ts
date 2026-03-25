@@ -19,12 +19,44 @@ async function showResultados(ctx: any) {
   const chatId = ctx.chat.id;
 
   try {
-    const resultados = await lotteryService.getResultadosHoy(chatId);
+    // Same approach as frontend: get tiradas + loterias separately
+    const [tiradasData, loteriasData] = await Promise.all([
+      lotteryService.getTiradas(chatId),
+      lotteryService.getLoterias(chatId),
+    ]);
 
-    if (!resultados || resultados.length === 0) {
+    // Filter only active tiradas
+    const tiradasActivas = tiradasData.filter((t: any) => t.activa);
+
+    if (tiradasActivas.length === 0) {
       await ctx.reply('📊 No hay resultados para hoy aún.');
       return;
     }
+
+    // Build lotería name map from loterias
+    const loteriasMap = new Map<number, string>();
+    for (const l of loteriasData) {
+      loteriasMap.set(l.id, l.nombre);
+    }
+
+    // Group tiradas by lotería ID
+    const gruposMap = new Map<number, { nombre: string; tiradas: any[] }>();
+
+    for (const t of tiradasActivas) {
+      const loteriaId = t.loteria || t.loteria_id;
+      if (!gruposMap.has(loteriaId)) {
+        gruposMap.set(loteriaId, {
+          nombre: loteriasMap.get(loteriaId) || t.loteria_nombre || 'Lotería',
+          tiradas: [],
+        });
+      }
+      gruposMap.get(loteriaId)!.tiradas.push(t);
+    }
+
+    // Sort tiradas by hora within each group
+    gruposMap.forEach((grupo) => {
+      grupo.tiradas.sort((a, b) => a.hora.localeCompare(b.hora));
+    });
 
     // Get today's date formatted
     const today = new Date();
@@ -33,32 +65,23 @@ async function showResultados(ctx: any) {
 
     let msg = `📊 *Resultados de Hoy*\n📅 ${fechaCapitalized}\n\n`;
 
-    // Group by lotería
-    const grouped: Record<string, any[]> = {};
-    for (const r of resultados) {
-      const key = r.loteria_nombre || 'Lotería';
-      if (!grouped[key]) grouped[key] = [];
-      grouped[key].push(r);
-    }
+    for (const [, grupo] of gruposMap) {
+      const conResultados = grupo.tiradas.filter((t: any) => t.resultado_hoy).length;
+      const total = grupo.tiradas.length;
+      const icono = conResultados === total && total > 0 ? '✅' : '⏳';
+      msg += `${icono} *${grupo.nombre}* (${conResultados}/${total})\n`;
 
-    for (const [loteria, tiradas] of Object.entries(grouped)) {
-      const conResultados = tiradas.filter((t: any) => t.pick_3 || t.pick_4).length;
-      msg += `*${loteria}* (${conResultados}/${tiradas.length})\n`;
+      for (const t of grupo.tiradas) {
+        const resultado = t.resultado_hoy;
+        const pick3 = resultado?.pick_3;
+        const pick4 = resultado?.pick_4;
 
-      for (const r of tiradas) {
-        const estado = r.pick_3 || r.pick_4 ? '✅' : '⏳';
-        msg += `  ${estado} ${formatHora(r.hora)}:`;
-
-        if (r.pick_3) {
-          const p3 = r.pick_3.split('').join(' ');
-          msg += ` 🎱 ${p3}`;
-        }
-        if (r.pick_4) {
-          const p4 = r.pick_4.split('').join(' ');
-          msg += ` | ${p4}`;
-        }
-        if (!r.pick_3 && !r.pick_4) {
-          msg += ` ⏳ Pendiente`;
+        if (pick3 || pick4) {
+          msg += `  ✅ ${formatHora(t.hora)}:`;
+          if (pick3) msg += ` 🎱 ${pick3.split('').join(' ')}`;
+          if (pick4) msg += ` | ${pick4.split('').join(' ')}`;
+        } else {
+          msg += `  ⏳ ${formatHora(t.hora)}: ⏳ Pendiente`;
         }
         msg += '\n';
       }
