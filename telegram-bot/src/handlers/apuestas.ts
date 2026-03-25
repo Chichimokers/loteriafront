@@ -140,14 +140,49 @@ export function registerApuestasHandlers(bot: Bot) {
         return;
       }
 
+      // Agregar opción de candado al final
+      const kb = modalidadesKeyboard(modalidades, 'apuesta:mod');
+      kb.row().text('🔗 Candado (combinaciones)', 'apuesta:candado');
+
       await ctx.answerCallbackQuery();
       await ctx.reply(
         `📐 *Modalidades de apuesta*\n_${session.wizardData.loteriaNombre} - ${session.wizardData.tiradaHora}_\n\nSelecciona una modalidad:`,
-        { parse_mode: 'Markdown', reply_markup: modalidadesKeyboard(modalidades, 'apuesta:mod') }
+        { parse_mode: 'Markdown', reply_markup: kb }
       );
     } catch (err: any) {
       await ctx.answerCallbackQuery('Error al cargar modalidades');
       await ctx.reply('❌ Error al cargar modalidades.');
+    }
+  });
+
+  // Step 3: Select candado (independiente)
+  bot.callbackQuery('apuesta:candado', authGuard, async (ctx) => {
+    const chatId = ctx.chat!.id;
+    const session = getSession(chatId);
+
+    try {
+      session.wizardData.modalidadId = null;
+      session.wizardData.modalidadNombre = 'Candado';
+      session.wizardData.premioPorPeso = null;
+      session.wizardData.modalityType = 'candado';
+      session.wizardStep = 'apuesta:numeros';
+      session.wizardData.numeros = [];
+
+      const user = await authService.getCurrentUser(chatId);
+      session.user = user;
+
+      await ctx.answerCallbackQuery();
+      await ctx.reply(
+        `🔗 *${session.wizardData.loteriaNombre}* - ${session.wizardData.tiradaHora}\n` +
+        `Modalidad: Candado (combinaciones automáticas)\n` +
+        `💰 Saldo: ${formatMonto(user.saldo_principal)}\n\n` +
+        getModalityInstructions('candado') +
+        `\n\nEscribe /listo cuando termines.`,
+        { parse_mode: 'Markdown' }
+      );
+    } catch (err: any) {
+      await ctx.answerCallbackQuery('Error');
+      await ctx.reply('❌ Error al seleccionar candado.');
     }
   });
 
@@ -178,26 +213,7 @@ export function registerApuestasHandlers(bot: Bot) {
       const user = await authService.getCurrentUser(chatId);
       session.user = user;
 
-      // For parlé, ask if direct or candado
-      if (modType === 'parle') {
-        session.wizardStep = 'apuesta:parle_tipo';
-        await ctx.answerCallbackQuery();
-        await ctx.reply(
-          `🎯 *${session.wizardData.loteriaNombre}* - ${session.wizardData.tiradaHora}\n` +
-          `Modalidad: ${modalidad.nombre} (${modalidad.premio_por_peso}x)\n` +
-          `💰 Saldo: ${formatMonto(user.saldo_principal)}\n\n` +
-          `¿Qué tipo de jugada quieres?`,
-          {
-            parse_mode: 'Markdown',
-            reply_markup: new InlineKeyboard()
-              .text('🎯 Parlé Directo', 'apuesta:parle:directo')
-              .row()
-              .text('🔒 Candado (combinaciones)', 'apuesta:parle:candado'),
-          }
-        );
-        return;
-      }
-
+      // For parlé, ir directo a números (no preguntar tipo)
       session.wizardStep = 'apuesta:numeros';
 
       await ctx.answerCallbackQuery();
@@ -209,38 +225,11 @@ export function registerApuestasHandlers(bot: Bot) {
         `\n\nEscribe /listo cuando termines.`,
         { parse_mode: 'Markdown' }
       );
+      return;
     } catch (err: any) {
       await ctx.answerCallbackQuery('Error');
       await ctx.reply('❌ Error al seleccionar modalidad.');
     }
-  });
-
-  // Parlé type selection - Directo
-  bot.callbackQuery('apuesta:parle:directo', authGuard, async (ctx) => {
-    const chatId = ctx.chat!.id;
-    const session = getSession(chatId);
-    session.wizardData.modalityType = 'parle';
-    session.wizardStep = 'apuesta:numeros';
-    session.wizardData.numeros = [];
-    await ctx.answerCallbackQuery();
-    await ctx.reply(
-      getModalityInstructions('parle') + `\n\nEscribe /listo cuando termines.`,
-      { parse_mode: 'Markdown' }
-    );
-  });
-
-  // Parlé type selection - Candado
-  bot.callbackQuery('apuesta:parle:candado', authGuard, async (ctx) => {
-    const chatId = ctx.chat!.id;
-    const session = getSession(chatId);
-    session.wizardData.modalityType = 'candado';
-    session.wizardStep = 'apuesta:numeros';
-    session.wizardData.numeros = [];
-    await ctx.answerCallbackQuery();
-    await ctx.reply(
-      getModalityInstructions('candado') + `\n\nEscribe /listo cuando termines.`,
-      { parse_mode: 'Markdown' }
-    );
   });
 
   // Register /listo as a command
