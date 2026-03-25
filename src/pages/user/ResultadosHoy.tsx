@@ -213,7 +213,7 @@ const ResultadosHoy: React.FC = () => {
                               )}
                               {pick4 && (
                                 <div>
-                                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Pick 3</span>
+                                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Pick 4</span>
                                   <div className="flex gap-2 mt-1">
                                     {pick4.split('').map((d, i) => (
                                       <div

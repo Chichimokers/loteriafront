@@ -111,8 +111,13 @@ export const lotteryService = {
 };
 
 export const apuestaService = {
-  createApuesta: async (data: { tirada_id: number; modalidad_id: number; numeros: string[]; monto_por_numero: number }) => {
+  createApuesta: async (data: { tirada_id: number; modalidad_id: number; numeros: string[] | string[][]; monto_por_numero: number }) => {
     const response = await api.post('/apuestas/', data);
+    return response.data;
+  },
+
+  createCandado: async (data: { tirada_id: number; numeros: string[]; monto_por_numero: number }) => {
+    const response = await api.post('/apuestas/candado/', data);
     return response.data;
   },
   
