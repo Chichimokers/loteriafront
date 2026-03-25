@@ -32,7 +32,6 @@ async function showHistorial(ctx: any) {
 
     for (const a of recent) {
       const status = a.paga === true ? '✅ Ganado' : a.paga === false && a.resultado ? '❌ Perdido' : '⏳ Pendiente';
-      const numeros = Array.isArray(a.numeros) ? a.numeros.join(', ') : a.numeros;
       msg += `${status} #${a.id}\n`;
       msg += `  🎰 ${a.loteria_nombre || 'N/A'}`;
       if (a.hora_tirada || a.tirada_hora) msg += ` - ${formatHora(a.hora_tirada || a.tirada_hora)}`;
@@ -43,7 +42,12 @@ async function showHistorial(ctx: any) {
       if (a.combinaciones_generadas && a.combinaciones_generadas.length > 0) {
         const combos = a.combinaciones_generadas.map((p: string[]) => `${p[0]}-${p[1]}`).join(', ');
         msg += `  🔗 Combinaciones (${a.combinaciones_generadas.length}): ${combos}\n`;
+      } else if (Array.isArray(a.numeros) && a.numeros.length > 0 && Array.isArray(a.numeros[0])) {
+        // Parlé directo: números son parejas
+        const parejas = a.numeros.map((p: string[]) => `${p[0]}-${p[1]}`).join(', ');
+        msg += `  🎯 Parejas: ${parejas}\n`;
       } else {
+        const numeros = Array.isArray(a.numeros) ? a.numeros.join(', ') : a.numeros;
         msg += `  🎯 ${numeros}\n`;
       }
 

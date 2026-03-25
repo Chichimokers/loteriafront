@@ -202,6 +202,22 @@ const History: React.FC = () => {
                         ))}
                       </div>
                     </>
+                  ) : Array.isArray(apuesta.numeros[0]) ? (
+                    <>
+                      <p className="text-xs text-gray-500 mb-2">Parejas jugadas ({apuesta.numeros.length})</p>
+                      <div className="flex flex-wrap gap-2">
+                        {(apuesta.numeros as unknown as string[][]).map((par, idx) => (
+                          <div
+                            key={idx}
+                            className="flex items-center gap-1 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl px-3 py-2 text-white shadow-md"
+                          >
+                            <span className="text-lg font-bold">{par[0]}</span>
+                            <span className="text-sm opacity-70">-</span>
+                            <span className="text-lg font-bold">{par[1]}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </>
                   ) : (
                     <>
                       <p className="text-xs text-gray-500 mb-2">Números jugados</p>
