@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { apuestaService, lotteryService } from '../../services/api';
-import ResultadosHoy from './ResultadosHoy';
+import { apuestaService } from '../../services/api';
 import { Dices, RefreshCw, Clock, Timer, Frown, PartyPopper } from 'lucide-react';
 import { formatMonto, formatHora } from '../../utils/format';
 
@@ -30,15 +29,7 @@ const History: React.FC = () => {
   const fetchApuestas = async () => {
     const data = await apuestaService.getApuestas();
     const apuestasArr = Array.isArray(data) ? data : (data as { results?: Apuesta[] }).results || [];
-
-    const tiradasData = await lotteryService.getTiradasActivas();
-    const tiradasMap = new Map<number, string>();
-    tiradasData.forEach((t: { id: number; hora: string }) => tiradasMap.set(t.id, t.hora));
-
-    return apuestasArr.map((apuesta: Apuesta) => ({
-      ...apuesta,
-      hora_tirada: tiradasMap.get(apuesta.tirada) || undefined
-    }));
+    return apuestasArr;
   };
 
   const loadApuestas = useCallback(async () => {
@@ -103,9 +94,6 @@ const History: React.FC = () => {
           Actualizar
         </button>
       </div>
-
-      {/* Resultados de Hoy */}
-      <ResultadosHoy />
 
       {/* Lista de Apuestas */}
       <div className="card">

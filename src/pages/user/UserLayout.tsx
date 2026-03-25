@@ -51,6 +51,12 @@ const UserLayout: React.FC = () => {
                 Apostar
               </Link>
               <Link 
+                to="/resultados" 
+                className="px-4 py-2 rounded-xl text-white/90 hover:bg-white/20 transition-all duration-200 font-medium"
+              >
+                Resultados
+              </Link>
+              <Link 
                 to="/historial" 
                 className="px-4 py-2 rounded-xl text-white/90 hover:bg-white/20 transition-all duration-200 font-medium"
               >
@@ -112,6 +118,13 @@ const UserLayout: React.FC = () => {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Apostar
+              </Link>
+              <Link 
+                to="/resultados" 
+                className="block px-4 py-3 rounded-xl hover:bg-white/20 transition-colors font-medium"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Resultados
               </Link>
               <Link 
                 to="/historial" 

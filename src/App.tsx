@@ -8,6 +8,7 @@ import UserLayout from './pages/user/UserLayout';
 import Dashboard from './pages/user/Dashboard';
 import Betting from './pages/user/Betting';
 import History from './pages/user/History';
+import Resultados from './pages/user/Resultados';
 import Profile from './pages/user/Profile';
 
 import AdminLayout from './pages/admin/AdminLayout';
@@ -53,6 +54,7 @@ const App: React.FC = () => {
         <Route index element={<Dashboard />} />
         <Route path="apuestas" element={<Betting />} />
         <Route path="historial" element={<History />} />
+        <Route path="resultados" element={<Resultados />} />
         <Route path="perfil" element={<Profile />} />
       </Route>
       
