@@ -9,6 +9,7 @@ import Dashboard from './pages/user/Dashboard';
 import Betting from './pages/user/Betting';
 import History from './pages/user/History';
 import Resultados from './pages/user/Resultados';
+import Notificaciones from './pages/user/Notificaciones';
 import Profile from './pages/user/Profile';
 
 import AdminLayout from './pages/admin/AdminLayout';
@@ -21,6 +22,7 @@ import AdminTiradas from './pages/admin/AdminTiradas';
 import AdminResultados from './pages/admin/AdminResultados';
 import AdminModalidades from './pages/admin/AdminModalidades';
 import AdminApuestas from './pages/admin/AdminApuestas';
+import AdminNotificaciones from './pages/admin/AdminNotificaciones';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode; adminOnly?: boolean }> = ({ children, adminOnly }) => {
   const { user, loading } = useAuth();
@@ -55,6 +57,7 @@ const App: React.FC = () => {
         <Route path="apuestas" element={<Betting />} />
         <Route path="historial" element={<History />} />
         <Route path="resultados" element={<Resultados />} />
+        <Route path="notificaciones" element={<Notificaciones />} />
         <Route path="perfil" element={<Profile />} />
       </Route>
       
@@ -65,6 +68,7 @@ const App: React.FC = () => {
       }>
         <Route index element={<AdminDashboard />} />
         <Route path="usuarios" element={<AdminUsers />} />
+        <Route path="notificaciones" element={<AdminNotificaciones />} />
         <Route path="apuestas" element={<AdminApuestas />} />
         <Route path="acreditaciones" element={<AdminAcreditaciones />} />
         <Route path="extracciones" element={<AdminExtracciones />} />

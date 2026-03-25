@@ -183,6 +183,11 @@ export const usuarioService = {
     const response = await api.patch(`/usuarios/${id}/`, data);
     return response.data;
   },
+
+  ajustarSaldo: async (id: number, data: { monto: number; tipo: 'principal' | 'extraccion'; operacion: 'sumar' | 'restar' }) => {
+    const response = await api.patch(`/usuarios/${id}/ajustar_saldo/`, data);
+    return response.data;
+  },
 };
 
 export const tarjetaService = {
@@ -214,6 +219,39 @@ export const modalidadService = {
 export const adminService = {
   getMetricas: async () => {
     const response = await api.get('/admin/metricas/');
+    return response.data;
+  },
+};
+
+export const notificacionService = {
+  // Cliente
+  getNotificaciones: async () => {
+    const response = await api.get('/notificaciones/');
+    return response.data;
+  },
+  getNoLeidas: async () => {
+    const response = await api.get('/notificaciones/no_leidas/');
+    return response.data;
+  },
+  leerNotificacion: async (id: number) => {
+    const response = await api.patch(`/notificaciones/${id}/leer/`);
+    return response.data;
+  },
+  leerTodas: async () => {
+    const response = await api.patch('/notificaciones/leer_todas/');
+    return response.data;
+  },
+  // Admin
+  getAdminNotificaciones: async () => {
+    const response = await api.get('/notificaciones/admin/');
+    return response.data;
+  },
+  getAdminNoLeidas: async () => {
+    const response = await api.get('/notificaciones/admin/no_leidas/');
+    return response.data;
+  },
+  leerTodasAdmin: async () => {
+    const response = await api.patch('/notificaciones/admin/leer_todas/');
     return response.data;
   },
 };

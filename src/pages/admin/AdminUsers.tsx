@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { usuarioService } from '../../services/api';
-import { RefreshCw, Users, Smartphone } from 'lucide-react';
+import { RefreshCw, Users, Smartphone, DollarSign, X } from 'lucide-react';
 import { formatMonto } from '../../utils/format';
 
 interface Usuario {
@@ -18,8 +18,14 @@ interface Usuario {
 const AdminUsers: React.FC = () => {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [editData, setEditData] = useState({ saldo_principal: 0, saldo_extraccion: 0 });
+
+  // Modal ajustar saldo
+  const [ajustarUsuario, setAjustarUsuario] = useState<Usuario | null>(null);
+  const [ajustarMonto, setAjustarMonto] = useState<number>(100);
+  const [ajustarTipo, setAjustarTipo] = useState<'principal' | 'extraccion'>('principal');
+  const [ajustarOperacion, setAjustarOperacion] = useState<'sumar' | 'restar'>('sumar');
+  const [ajustarLoading, setAjustarLoading] = useState(false);
+  const [ajustarMsg, setAjustarMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
     loadUsuarios();
@@ -60,30 +66,47 @@ const AdminUsers: React.FC = () => {
     return parts.join('-');
   };
 
-  const handleEdit = (usuario: Usuario) => {
-    setEditingId(usuario.id);
-    setEditData({
-      saldo_principal: typeof usuario.saldo_principal === 'string' ? parseFloat(usuario.saldo_principal) : usuario.saldo_principal,
-      saldo_extraccion: typeof usuario.saldo_extraccion === 'string' ? parseFloat(usuario.saldo_extraccion) : usuario.saldo_extraccion,
-    });
-  };
-
-  const handleSave = async (id: number) => {
-    try {
-      await usuarioService.updateUsuario(id, editData);
-      await loadUsuarios();
-      setEditingId(null);
-    } catch (err) {
-      console.error('Error updating usuario:', err);
-    }
-  };
-
   const handleToggleActive = async (usuario: Usuario) => {
     try {
       await usuarioService.updateUsuario(usuario.id, { is_active: !usuario.is_active });
       await loadUsuarios();
     } catch (err) {
       console.error('Error toggling usuario:', err);
+    }
+  };
+
+  const openAjustarModal = (usuario: Usuario) => {
+    setAjustarUsuario(usuario);
+    setAjustarMonto(100);
+    setAjustarTipo('principal');
+    setAjustarOperacion('sumar');
+    setAjustarMsg(null);
+  };
+
+  const handleAjustarSaldo = async () => {
+    if (!ajustarUsuario || ajustarMonto <= 0) return;
+    setAjustarLoading(true);
+    setAjustarMsg(null);
+    try {
+      const res = await usuarioService.ajustarSaldo(ajustarUsuario.id, {
+        monto: ajustarMonto,
+        tipo: ajustarTipo,
+        operacion: ajustarOperacion,
+      });
+      setAjustarMsg({ type: 'success', text: res.message });
+      await loadUsuarios();
+      setAjustarUsuario(null);
+    } catch (err: unknown) {
+      let msg = 'Error al ajustar saldo';
+      if (err && typeof err === 'object' && 'response' in err) {
+        const axiosErr = err as { response?: { data?: { error?: string; detail?: string } } };
+        const data = axiosErr.response?.data;
+        if (data?.error) msg = data.error;
+        else if (data?.detail) msg = data.detail;
+      }
+      setAjustarMsg({ type: 'error', text: msg });
+    } finally {
+      setAjustarLoading(false);
     }
   };
 
@@ -175,20 +198,9 @@ const AdminUsers: React.FC = () => {
                 </div>
 
                 <div className="flex gap-2 pt-2 border-t">
-                  {editingId === usuario.id ? (
-                    <button onClick={() => handleSave(usuario.id)} className="flex-1 py-2 bg-green-500 text-white rounded-lg text-sm font-medium">
-                      Guardar
-                    </button>
-                  ) : (
-                    <>
-                      <button onClick={() => handleEdit(usuario)} className="flex-1 py-2 bg-indigo-500 text-white rounded-lg text-sm font-medium">
-                        Editar
-                      </button>
-                      <button onClick={() => handleToggleActive(usuario)} className={`flex-1 py-2 rounded-lg text-sm font-medium ${usuario.is_active ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
-                        {usuario.is_active ? 'Bloquear' : 'Activar'}
-                      </button>
-                    </>
-                  )}
+                  <button onClick={() => openAjustarModal(usuario)} className="flex-1 py-2 bg-amber-500 text-white rounded-lg text-sm font-medium flex items-center justify-center gap-1">
+                    <DollarSign className="w-4 h-4" /> Ajustar Saldo
+                  </button>
                 </div>
               </div>
             ))}
@@ -218,30 +230,8 @@ const AdminUsers: React.FC = () => {
                       <td className="p-4 text-sm text-gray-600">{usuario.movil}</td>
                       <td className="p-4 text-sm text-gray-600">{usuario.banco || '-'}</td>
                       <td className="p-4 text-sm text-gray-600">{formatTarjeta(usuario.tarjeta_bancaria)}</td>
-                      <td className="p-4 text-sm font-bold text-gray-900">
-                        {editingId === usuario.id ? (
-                          <input
-                            type="number"
-                            value={editData.saldo_principal}
-                            onChange={(e) => setEditData({ ...editData, saldo_principal: Number(e.target.value) })}
-                            className="w-24 p-1 border rounded"
-                          />
-                        ) : (
-                          `${getSaldo(usuario.saldo_principal)} CUP`
-                        )}
-                      </td>
-                      <td className="p-4 text-sm font-bold text-gray-900">
-                        {editingId === usuario.id ? (
-                          <input
-                            type="number"
-                            value={editData.saldo_extraccion}
-                            onChange={(e) => setEditData({ ...editData, saldo_extraccion: Number(e.target.value) })}
-                            className="w-24 p-1 border rounded"
-                          />
-                        ) : (
-                          `${getSaldo(usuario.saldo_extraccion)} CUP`
-                        )}
-                      </td>
+                      <td className="p-4 text-sm font-bold text-gray-900">{getSaldo(usuario.saldo_principal)} CUP</td>
+                      <td className="p-4 text-sm font-bold text-gray-900">{getSaldo(usuario.saldo_extraccion)} CUP</td>
                       <td className="p-4 text-sm text-gray-600">{formatFecha(usuario.fecha_registro)}</td>
                       <td className="p-4">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${usuario.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
@@ -249,20 +239,14 @@ const AdminUsers: React.FC = () => {
                         </span>
                       </td>
                       <td className="p-4">
-                        {editingId === usuario.id ? (
-                          <button onClick={() => handleSave(usuario.id)} className="text-green-500 font-medium text-sm">
-                            Guardar
+                        <div className="flex gap-2">
+                          <button onClick={() => openAjustarModal(usuario)} className="text-amber-500 font-medium text-sm flex items-center gap-1">
+                            <DollarSign className="w-4 h-4" /> Ajustar
                           </button>
-                        ) : (
-                          <div className="flex gap-2">
-                            <button onClick={() => handleEdit(usuario)} className="text-indigo-500 font-medium text-sm">
-                              Editar
-                            </button>
-                            <button onClick={() => handleToggleActive(usuario)} className="text-gray-500 hover:text-gray-700 text-sm">
-                              {usuario.is_active ? 'Bloquear' : 'Activar'}
-                            </button>
-                          </div>
-                        )}
+                          <button onClick={() => handleToggleActive(usuario)} className="text-gray-500 hover:text-gray-700 text-sm">
+                            {usuario.is_active ? 'Bloquear' : 'Activar'}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -271,6 +255,115 @@ const AdminUsers: React.FC = () => {
             </div>
           </div>
         </>
+      )}
+
+      {/* Modal Ajustar Saldo */}
+      {ajustarUsuario && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold text-gray-900">Ajustar Saldo</h2>
+              <button onClick={() => setAjustarUsuario(null)} className="p-1 hover:bg-gray-100 rounded-lg">
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            <div className="bg-gray-50 rounded-xl p-3">
+              <p className="text-sm text-gray-500">Usuario</p>
+              <p className="font-semibold text-gray-900">{ajustarUsuario.email}</p>
+              <p className="text-xs text-gray-500 mt-1">
+                Principal: {getSaldo(ajustarUsuario.saldo_principal)} CUP | Extracción: {getSaldo(ajustarUsuario.saldo_extraccion)} CUP
+              </p>
+            </div>
+
+            {ajustarMsg && (
+              <div className={`p-3 rounded-xl text-sm ${ajustarMsg.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                {ajustarMsg.text}
+              </div>
+            )}
+
+            {/* Operación */}
+            <div>
+              <p className="text-sm text-gray-500 mb-2">Operación</p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setAjustarOperacion('sumar')}
+                  className={`flex-1 py-3 rounded-xl font-medium text-sm ${ajustarOperacion === 'sumar' ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-600'}`}
+                >
+                  Sumar
+                </button>
+                <button
+                  onClick={() => setAjustarOperacion('restar')}
+                  className={`flex-1 py-3 rounded-xl font-medium text-sm ${ajustarOperacion === 'restar' ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-600'}`}
+                >
+                  Restar
+                </button>
+              </div>
+            </div>
+
+            {/* Tipo */}
+            <div>
+              <p className="text-sm text-gray-500 mb-2">Tipo de saldo</p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setAjustarTipo('principal')}
+                  className={`flex-1 py-3 rounded-xl font-medium text-sm ${ajustarTipo === 'principal' ? 'bg-indigo-500 text-white' : 'bg-gray-100 text-gray-600'}`}
+                >
+                  Principal
+                </button>
+                <button
+                  onClick={() => setAjustarTipo('extraccion')}
+                  className={`flex-1 py-3 rounded-xl font-medium text-sm ${ajustarTipo === 'extraccion' ? 'bg-indigo-500 text-white' : 'bg-gray-100 text-gray-600'}`}
+                >
+                  Extracción
+                </button>
+              </div>
+            </div>
+
+            {/* Monto */}
+            <div>
+              <p className="text-sm text-gray-500 mb-2">Monto (CUP)</p>
+              <input
+                type="number"
+                min="1"
+                value={ajustarMonto}
+                onChange={(e) => setAjustarMonto(Number(e.target.value))}
+                className="w-full p-3 border border-gray-200 rounded-xl text-center text-xl font-bold focus:outline-none focus:border-indigo-500"
+              />
+              <div className="flex gap-2 mt-2">
+                {[50, 100, 200, 500, 1000].map((v) => (
+                  <button
+                    key={v}
+                    onClick={() => setAjustarMonto(v)}
+                    className={`flex-1 py-1 rounded-lg text-xs font-medium ${ajustarMonto === v ? 'bg-indigo-500 text-white' : 'bg-gray-100 text-gray-600'}`}
+                  >
+                    {v}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Resumen */}
+            <div className="bg-gray-50 rounded-xl p-3 text-sm text-center">
+              {ajustarOperacion === 'sumar' ? 'Sumar' : 'Restar'} <span className="font-bold">{ajustarMonto} CUP</span> al saldo de <span className="font-bold">{ajustarTipo === 'principal' ? 'principal' : 'extracción'}</span>
+            </div>
+
+            <button
+              onClick={handleAjustarSaldo}
+              disabled={ajustarLoading || ajustarMonto <= 0}
+              className="w-full py-3 bg-indigo-500 text-white rounded-xl font-bold text-sm disabled:opacity-40 flex items-center justify-center gap-2"
+            >
+              {ajustarLoading ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <>
+                  <DollarSign className="w-4 h-4" />
+                  Confirmar Ajuste
+                </>
+              )}
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

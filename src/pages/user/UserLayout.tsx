@@ -1,13 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../../context/auth-context';
-import { Dices, Wallet, LogOut, Menu, X } from 'lucide-react';
+import { Dices, Wallet, LogOut, Menu, X, Bell } from 'lucide-react';
 import { formatMonto } from '../../utils/format';
+import { notificacionService } from '../../services/api';
 
 const UserLayout: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [noLeidas, setNoLeidas] = useState(0);
+
+  const loadNoLeidas = useCallback(async () => {
+    try {
+      const data = await notificacionService.getNoLeidas();
+      setNoLeidas(data.no_leidas || 0);
+    } catch {
+      // silent fail
+    }
+  }, []);
+
+  useEffect(() => {
+    loadNoLeidas();
+    const interval = setInterval(loadNoLeidas, 30000);
+    return () => clearInterval(interval);
+  }, [loadNoLeidas]);
 
   const handleLogout = () => {
     logout();
@@ -72,6 +89,14 @@ const UserLayout: React.FC = () => {
 
             {/* User Info & Logout */}
             <div className="hidden md:flex items-center gap-4">
+              <Link to="/notificaciones" className="relative p-2 rounded-xl hover:bg-white/20 transition-all">
+                <Bell className="w-5 h-5" />
+                {noLeidas > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                    {noLeidas > 9 ? '9+' : noLeidas}
+                  </span>
+                )}
+              </Link>
               <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full flex items-center gap-2">
                 <Wallet className="w-4 h-4" />
                 <span className="text-sm font-medium">
@@ -139,6 +164,18 @@ const UserLayout: React.FC = () => {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Perfil
+              </Link>
+              <Link 
+                to="/notificaciones" 
+                className="block px-4 py-3 rounded-xl hover:bg-white/20 transition-colors font-medium"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Notificaciones
+                {noLeidas > 0 && (
+                  <span className="ml-2 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                    {noLeidas}
+                  </span>
+                )}
               </Link>
               <div className="pt-4 border-t border-white/20">
                 <div className="bg-white/20 px-4 py-3 rounded-xl mb-3 flex items-center gap-2">

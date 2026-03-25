@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/auth-context';
 import { 
@@ -16,14 +16,32 @@ import {
   User, 
   LogOut, 
   Menu, 
-  X 
+  X,
+  Bell
 } from 'lucide-react';
+import { notificacionService } from '../../services/api';
 
 const AdminLayout: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [noLeidas, setNoLeidas] = useState(0);
+
+  const loadNoLeidas = useCallback(async () => {
+    try {
+      const data = await notificacionService.getAdminNoLeidas();
+      setNoLeidas(data.no_leidas || 0);
+    } catch {
+      // silent fail
+    }
+  }, []);
+
+  useEffect(() => {
+    loadNoLeidas();
+    const interval = setInterval(loadNoLeidas, 30000);
+    return () => clearInterval(interval);
+  }, [loadNoLeidas]);
 
   const handleLogout = () => {
     logout();
@@ -45,6 +63,7 @@ const AdminLayout: React.FC = () => {
   const navItems = [
     { path: '/admin', label: 'Dashboard', icon: <BarChart3 className="w-5 h-5" /> },
     { path: '/admin/usuarios', label: 'Usuarios', icon: <Users className="w-5 h-5" /> },
+    { path: '/admin/notificaciones', label: 'Notificaciones', icon: <Bell className="w-5 h-5" />, badge: noLeidas },
     { path: '/admin/apuestas', label: 'Apuestas', icon: <Target className="w-5 h-5" /> },
     { path: '/admin/acreditaciones', label: 'Acreditaciones', icon: <Wallet className="w-5 h-5" /> },
     { path: '/admin/extracciones', label: 'Extracciones', icon: <BanknoteArrowDown className="w-5 h-5" /> },
@@ -99,7 +118,7 @@ const AdminLayout: React.FC = () => {
               key={item.path}
               to={item.path}
               className={`
-                flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
+                flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 relative
                 ${isActive(item.path) 
                   ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/30' 
                   : 'text-gray-300 hover:bg-gray-800 hover:text-white'}
@@ -108,6 +127,11 @@ const AdminLayout: React.FC = () => {
             >
               <span className="text-xl">{item.icon}</span>
               <span className="font-medium">{item.label}</span>
+              {'badge' in item && (item as { badge: number }).badge > 0 && (
+                <span className="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                  {(item as { badge: number }).badge}
+                </span>
+              )}
             </Link>
           ))}
         </nav>
