@@ -2,6 +2,7 @@ import type { Bot, Context } from 'grammy';
 import { getSession, clearSession } from '../utils/store.js';
 import { authService } from '../api.js';
 import { mainMenuKeyboard, adminMenuKeyboard, banksKeyboard } from '../keyboards/keyboards.js';
+import { formatMonto } from '../utils/format.js';
 
 export function registerStartHandlers(bot: Bot) {
   // /start command
@@ -130,8 +131,8 @@ async function handleLoginWizard(ctx: Context, session: ReturnType<typeof getSes
       const menuKb = user.is_staff ? adminMenuKeyboard : mainMenuKeyboard;
       await ctx.reply(
         `✅ *Bienvenido, ${user.email}!*\n\n` +
-        `💰 Saldo Principal: ${user.saldo_principal.toFixed(2)} CUP\n` +
-        `💸 Saldo Extracción: ${user.saldo_extraccion.toFixed(2)} CUP`,
+        `💰 Saldo Principal: ${formatMonto(user.saldo_principal)}\n` +
+        `💸 Saldo Extracción: ${formatMonto(user.saldo_extraccion)}`,
         { parse_mode: 'Markdown', reply_markup: menuKb }
       );
     } catch (err: any) {

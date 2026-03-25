@@ -2,6 +2,7 @@ import type { Bot } from 'grammy';
 import { authGuard } from '../middleware/auth.js';
 import { authService } from '../api.js';
 import { getSession } from '../utils/store.js';
+import { formatMonto } from '../utils/format.js';
 
 export function registerDashboardHandlers(bot: Bot) {
   // /saldo command
@@ -26,8 +27,8 @@ async function showSaldo(ctx: any) {
 
     await ctx.reply(
       `💰 *Tus Saldos*\n\n` +
-      `📊 Saldo Principal: *${user.saldo_principal.toFixed(2)} CUP*\n` +
-      `💸 Saldo Extracción: *${user.saldo_extraccion.toFixed(2)} CUP*\n\n` +
+      `📊 Saldo Principal: *${formatMonto(user.saldo_principal)}*\n` +
+      `💸 Saldo Extracción: *${formatMonto(user.saldo_extraccion)}*\n\n` +
       `Usa /acreditar para depositar fondos\n` +
       `Usa /extraer para retirar ganancias`,
       { parse_mode: 'Markdown' }

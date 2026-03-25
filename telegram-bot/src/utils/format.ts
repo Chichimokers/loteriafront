@@ -1,5 +1,5 @@
-export function formatMonto(monto: number): string {
-  return `${monto.toFixed(2)} CUP`;
+export function formatMonto(monto: number | string): string {
+  return `${Number(monto).toFixed(2)} CUP`;
 }
 
 export function formatHora(hora: string): string {

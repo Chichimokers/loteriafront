@@ -3,7 +3,7 @@ import { authGuard } from '../middleware/auth.js';
 import { getSession } from '../utils/store.js';
 import { lotteryService, apuestaService, authService } from '../api.js';
 import { loteriasKeyboard, tiradasKeyboard, modalidadesKeyboard } from '../keyboards/keyboards.js';
-import { formatHora } from '../utils/format.js';
+import { formatHora, formatMonto } from '../utils/format.js';
 
 export function registerApuestasHandlers(bot: Bot) {
   // /apostar command
@@ -237,7 +237,7 @@ export function registerApuestasHandlers(bot: Bot) {
         `✅ *Apuesta realizada exitosamente!*\n\n` +
         `🎯 Números: ${session.wizardData.numeros.join(', ')}\n` +
         `💵 Total apostado: ${total.toFixed(2)} CUP\n` +
-        `💰 Saldo restante: ${user.saldo_principal.toFixed(2)} CUP`,
+        `💰 Saldo restante: ${formatMonto(user.saldo_principal)}`,
         { parse_mode: 'Markdown' }
       );
     } catch (err: any) {
