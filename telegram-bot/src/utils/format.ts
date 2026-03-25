@@ -6,7 +6,11 @@ export function formatHora(hora: string): string {
   if (!hora) return '';
   const parts = hora.split(':');
   if (parts.length >= 2) {
-    return `${parts[0]}:${parts[1]}`;
+    let h = parseInt(parts[0]);
+    const m = parts[1];
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    return `${h}:${m} ${ampm}`;
   }
   return hora;
 }
