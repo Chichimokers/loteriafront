@@ -100,6 +100,11 @@ jobs:
 
       - name: 🐳 Build Docker images
         run: |
+          echo "=== Preparing bot .env ==="
+          if [ ! -f telegram-bot/.env ]; then
+            cp telegram-bot/.env.example telegram-bot/.env
+            echo "Bot .env created from .env.example"
+          fi
           echo "=== Building all Docker images ==="
           docker-compose build
           echo "=== Images built successfully ==="
