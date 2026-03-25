@@ -28,7 +28,7 @@ async function showHistorial(ctx: any) {
 
     // Show last 15 bets
     const recent = apuestas.slice(0, 15);
-    let msg = `📋 *Mis Apuestas* (últimas ${recent.length} de ${apuestas.length})\n\n`;
+    let msg = `📋 Mis Apuestas (últimas ${recent.length} de ${apuestas.length})\n\n`;
 
     for (const a of recent) {
       const status = a.paga === true ? '✅ Ganado' : a.paga === false && a.resultado ? '❌ Perdido' : '⏳ Pendiente';
@@ -74,7 +74,7 @@ async function showHistorial(ctx: any) {
       msg = msg.slice(0, 3990) + '\n\n... (ver más en la web)';
     }
 
-    await ctx.reply(msg, { parse_mode: 'Markdown' });
+    await ctx.reply(msg);
   } catch (err: any) {
     const data = err.response?.data;
     let errorMsg = err.message || 'Error al obtener historial';
