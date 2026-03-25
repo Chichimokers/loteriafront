@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { apuestaService } from '../../services/api';
+import { apuestaService, lotteryService } from '../../services/api';
 import { Dices, RefreshCw, Clock, Timer, Frown, PartyPopper } from 'lucide-react';
 import { formatMonto, formatHora } from '../../utils/format';
 
@@ -27,9 +27,18 @@ const History: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchApuestas = async () => {
-    const data = await apuestaService.getApuestas();
-    const apuestasArr = Array.isArray(data) ? data : (data as { results?: Apuesta[] }).results || [];
-    return apuestasArr;
+    const [apuestasData, tiradasData] = await Promise.all([
+      apuestaService.getApuestas(),
+      lotteryService.getTiradasActivas(),
+    ]);
+    const apuestasArr = Array.isArray(apuestasData) ? apuestasData : (apuestasData as { results?: Apuesta[] }).results || [];
+    const tiradasMap = new Map<number, string>();
+    const tiradasArr = Array.isArray(tiradasData) ? tiradasData : (tiradasData as { results?: { id: number; hora: string }[] }).results || [];
+    tiradasArr.forEach((t: { id: number; hora: string }) => tiradasMap.set(t.id, t.hora));
+    return apuestasArr.map((apuesta: Apuesta) => ({
+      ...apuesta,
+      hora_tirada: tiradasMap.get(apuesta.tirada) || undefined,
+    }));
   };
 
   const loadApuestas = useCallback(async () => {

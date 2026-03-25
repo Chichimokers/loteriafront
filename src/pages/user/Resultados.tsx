@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { lotteryService } from '../../services/api';
 import { Dices, Clock, RefreshCw, Timer } from 'lucide-react';
+import { formatHora } from '../../utils/format';
 
 interface Tirada {
   id: number;
@@ -86,11 +87,6 @@ const Resultados: React.FC = () => {
       setLoading(false);
       setRefreshing(false);
     }
-  };
-
-  const formatHora = (hora: string) => {
-    if (!hora) return '-';
-    return hora.substring(0, 5);
   };
 
   if (loading) {
