@@ -49,7 +49,7 @@ export function registerExtraccionHandlers(bot: Bot) {
       await ctx.reply(
         `✅ *Solicitud de extracción enviada*\n\n` +
         `💵 Monto: ${formatMonto(monto)}\n` +
-        `💰 Saldo extracción restante: ${formatMonto(user.saldo_extraccion)}\n\n` +
+        `💰 Saldo restante: ${formatMonto(user.saldo_principal)}\n\n` +
         `⏳ Tu solicitud está pendiente de aprobación.`,
         { parse_mode: 'Markdown' }
       );
@@ -78,17 +78,17 @@ async function startExtraccion(ctx: any) {
     const user = await authService.getCurrentUser(chatId);
     session.user = user;
 
-    if (user.saldo_extraccion <= 0) {
-      await ctx.reply('❌ No tienes saldo de extracción disponible.');
+    if (Number(user.saldo_principal) <= 0) {
+      await ctx.reply('❌ No tienes saldo disponible para extraer.');
       return;
     }
 
     session.wizardStep = 'extraccion:monto';
-    session.wizardData = { saldoDisponible: user.saldo_extraccion };
+    session.wizardData = { saldoDisponible: user.saldo_principal };
 
     await ctx.reply(
       `💸 *Extraer Dinero*\n\n` +
-      `💰 Saldo disponible para extracción: *${formatMonto(user.saldo_extraccion)}*\n\n` +
+      `💰 Saldo disponible: *${formatMonto(user.saldo_principal)}*\n\n` +
       `Ingresa el monto que deseas extraer:`,
       { parse_mode: 'Markdown' }
     );
