@@ -137,6 +137,22 @@ export function registerApuestasHandlers(bot: Bot) {
     }
   });
 
+  // Register /listo as a command so it works even if Telegram handles it
+  bot.command('listo', authGuard, async (ctx) => {
+    const chatId = ctx.chat.id;
+    const session = getSession(chatId);
+    if (session.wizardStep !== 'apuesta:numeros') return;
+    if (session.wizardData.numeros.length === 0) {
+      await ctx.reply('❌ Debes ingresar al menos un número.');
+      return;
+    }
+    session.wizardStep = 'apuesta:monto';
+    await ctx.reply(
+      `📝 Números seleccionados: ${session.wizardData.numeros.join(', ')}\n\n` +
+      `Ingresa el monto por número (en CUP):`
+    );
+  });
+
   // Handle number input during bet wizard
   bot.on('message:text', async (ctx, next) => {
     const chatId = ctx.chat.id;
@@ -146,8 +162,12 @@ export function registerApuestasHandlers(bot: Bot) {
     if (session.wizardStep !== 'apuesta:numeros') return next();
     if (text.startsWith('/')) return next();
 
-    // Listo para monto
-    if (text.toLowerCase() === '/listo' || text.toLowerCase() === 'listo') {
+    // Skip menu button texts
+    const menuButtons = ['💰 Saldo', '📊 Resultados', '📋 Historial', '👤 Perfil', '🎰 Apostar', '💳 Acreditar', '💸 Extraer', '🔧 Admin'];
+    if (menuButtons.includes(text)) return next();
+
+    // Listo para monto (as text, not command)
+    if (text.toLowerCase() === 'listo') {
       if (session.wizardData.numeros.length === 0) {
         await ctx.reply('❌ Debes ingresar al menos un número.');
         return;

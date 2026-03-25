@@ -57,6 +57,10 @@ export function registerAcreditacionHandlers(bot: Bot) {
     if (!session.wizardStep?.startsWith('acreditacion:')) return next();
     if (text.startsWith('/')) return next();
 
+    // Skip menu button texts
+    const menuButtons = ['💰 Saldo', '📊 Resultados', '📋 Historial', '👤 Perfil', '🎰 Apostar', '💳 Acreditar', '💸 Extraer', '🔧 Admin'];
+    if (menuButtons.includes(text)) return next();
+
     if (session.wizardStep === 'acreditacion:monto') {
       const monto = parseFloat(text);
       if (isNaN(monto) || monto <= 0) {
