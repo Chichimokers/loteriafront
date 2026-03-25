@@ -135,8 +135,15 @@ async function handleLoginWizard(ctx: Context, session: ReturnType<typeof getSes
         { parse_mode: 'Markdown', reply_markup: menuKb }
       );
     } catch (err: any) {
+      const data = err.response?.data;
+      let errorMsg = err.message || 'Error de conexión';
+      if (data) {
+        if (data.detail) errorMsg = data.detail;
+        else if (data.non_field_errors) errorMsg = data.non_field_errors.join(', ');
+        else errorMsg = JSON.stringify(data);
+      }
       await ctx.reply(
-        `❌ Error al iniciar sesión: ${err.response?.data?.detail || err.response?.data?.detail || 'Credenciales inválidas'}\n\nUsa /login para intentar de nuevo.`
+        `❌ Error al iniciar sesión: ${errorMsg}\n\nUsa /login para intentar de nuevo.`
       );
     }
     session.wizardData = {};
