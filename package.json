@@ -4,15 +4,15 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "dev": "node init && vite",
+    "build": "node init && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "bot:dev": "cd telegram-bot && npm run dev",
     "bot:build": "cd telegram-bot && npm run build",
     "bot:start": "cd telegram-bot && npm start",
-    "dev:all": "concurrently \"npm run dev\" \"npm run bot:dev\"",
-    "build:all": "npm run build && npm run bot:build"
+    "dev:all": "node init && concurrently \"npm run dev\" \"npm run bot:dev\"",
+    "build:all": "node init && npm run build && npm run bot:build"
   },
   "dependencies": {
     "axios": "^1.6.7",
